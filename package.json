@@ -1,0 +1,29 @@
+{
+  "name": "expressjs_vercel_boilerplate",
+  "version": "1.0.0",
+  "description": "A boilerplate to start your expressjs project deployable on Vercel",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daniwalter001/expressjs_vercel_boilerplate.git"
+  },
+  "keywords": [
+    "vercel",
+    "expressjs",
+    "node",
+    "nodejs",
+    "boilerplate"
+  ],
+  "author": "daniwalter001",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/daniwalter001/expressjs_vercel_boilerplate/issues"
+  },
+  "homepage": "https://github.com/daniwalter001/expressjs_vercel_boilerplate#readme",
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
