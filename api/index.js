@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
+const { manifest } = require("../config");
 const fetch = require("node-fetch");
 
 app
@@ -9,22 +10,7 @@ app
     res.setHeader("Access-Control-Allow-Headers", "*");
     res.setHeader("Content-Type", "application/json");
 
-    var json = {
-      id: "daiki.uhdm.stream",
-      version: "1.0.0",
-      name: "UHDMovies",
-      description: "From uhdmovie.dad",
-      logo: "https://raw.githubusercontent.com/daniwalter001/daniwalter001/main/52852137.png",
-      resources: [
-        {
-          name: "stream",
-          types: ["movie", "series", "anime"],
-          idPrefixes: ["tt", "kitsu"],
-        },
-      ],
-      types: ["movie", "series", "anime", "other"],
-      catalogs: [],
-    };
+    var json = { ...manifest };
 
     return res.send(json);
   })
