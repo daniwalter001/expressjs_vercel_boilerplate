@@ -2,25 +2,13 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const { manifest } = require("../config");
-const fetch = require("node-fetch");
+const CatalogAddon = require("../controller");
 
 app
-  .get("/manifest.json", (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Headers", "*");
-    res.setHeader("Content-Type", "application/json");
-
-    var json = { ...manifest };
-
-    return res.send(json);
-  })
-  .get("/stream/:type/:id", async (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Headers", "*");
-    res.setHeader("Content-Type", "application/json");
-
-    return res.send({ streams: [] });
-  })
+  .get("/manifest.json", CatalogAddon.handleManifest)
+  .get("/catalog/:type/:id.json", CatalogAddon.handleCatalog)
+  .get("/catalog/:type/:id/:extra.json", CatalogAddon.handleCatalog)
+  .get("/meta/:type/:id", CatalogAddon.handleMeta)
   .listen(process.env.PORT || 3000, () => {
     console.log("The server is working on " + process.env.PORT || 3000);
   });

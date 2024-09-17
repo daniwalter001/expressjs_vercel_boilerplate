@@ -1,7 +1,7 @@
 const config = {
-  id: "daiki.uhdm.stream",
+  id: "strm.daiki.tmdb_ctlg",
   version: "1.0.0",
-  name: "UHDMovies",
+  name: "Catalog Vercel",
   description: "From uhdmovie.dad",
   logo: "https://raw.githubusercontent.com/daniwalter001/daniwalter001/main/52852137.png",
 };
