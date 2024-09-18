@@ -1,8 +1,9 @@
 const config = {
   id: "strm.daiki.tmdb_ctlg",
+  prefix: "tmdb_ctlg.addon",
   version: "1.0.0",
   name: "Catalog Vercel",
-  description: "From uhdmovie.dad",
+  description: "From Catalog Vercel",
   logo: "https://raw.githubusercontent.com/daniwalter001/daniwalter001/main/52852137.png",
 };
 
@@ -11,15 +12,12 @@ const manifest = {
   version: config.version,
   name: config.name,
   description: config.description,
-  logo: "https://raw.githubusercontent.com/daniwalter001/daniwalter001/main/52852137.png",
-  resources: [
-    {
-      name: "stream",
-      types: ["movie", "series", "anime"],
-      idPrefixes: ["tt", "kitsu"],
-    },
-  ],
-  types: ["movie", "series", "anime", "other"],
+  logo: config.logo,
+  resources: ["catalog", "meta", "addon_catalog"],
+  types: ["movie", "series"],
+  behaviorHints: {
+    newEpisodeNotifications: true,
+  },
   catalogs: [],
 };
 

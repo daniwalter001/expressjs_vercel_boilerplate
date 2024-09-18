@@ -1,0 +1,461 @@
+const config = require("./config");
+const fetch = require("node-fetch");
+
+const getProviders = () => {
+  const url =
+    "https://api.themoviedb.org/3/watch/providers/tv?language=fr-FR&watch_region=FR";
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "results" in json
+        ? json["results"].map((el) => {
+            return {
+              logo_path: el?.logo_path,
+              provider_name: el?.provider_name,
+              provider_id: el?.provider_id,
+            };
+          })
+        : [];
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return [];
+    });
+};
+
+const findShow = (id, lang = "fr-FR") => {
+  // console.log({ lang });
+  if (!id) return false;
+  const url = `https://api.themoviedb.org/3/tv/${id}?language=${lang}`;
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  let retries = 0;
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then(async (json) => {
+      return "id" in json ? json : false;
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return false;
+    });
+};
+
+const findMovie = (id) => {
+  if (!id) return false;
+
+  const url = `https://api.themoviedb.org/3/movie/${id}?language=fr-FR`;
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "id" in json ? json : false;
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return false;
+    });
+};
+
+const getSeason = (tvid, season) => {
+  if (!tvid) return false;
+  if (!season) {
+    season = 0;
+  }
+
+  const url = `https://api.themoviedb.org/3/tv/${tvid}/season/${season}?language=fr-FR`;
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "id" in json ? json : false;
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return false;
+    });
+};
+
+const externalSourceMovie = (id) => {
+  if (!id) return false;
+
+  const url = `https://api.themoviedb.org/3/movie/${id}/external_ids`;
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "imdb_id" in json ? json : false;
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return false;
+    });
+};
+
+const externalSourceShow = (id) => {
+  if (!id) return false;
+
+  const url = `https://api.themoviedb.org/3/tv/${id}/external_ids`;
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "imdb_id" in json ? json : false;
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return false;
+    });
+};
+
+const getTVGenres = () => {
+  const url = "https://api.themoviedb.org/3/genre/tv/list?language=fr";
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "genres" in json ? json["genres"] : [];
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return [];
+    });
+};
+
+const getMovieGenres = () => {
+  const url = "https://api.themoviedb.org/3/genre/movie/list?language=fr";
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "genres" in json ? json["genres"] : [];
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return [];
+    });
+};
+
+const discoverTVShows = (providerID, region = "US", page, genre, origin) => {
+  let today = new Date().toISOString().split("T")[0];
+  let start = `${new Date().getFullYear() - 2}-01-01`;
+  let url =
+    `https://api.themoviedb.org/3/discover/tv?include_adult=false&include_null_first_air_dates=false&language=fr-FR&sort_by=popularity.desc&vote_average.gte=5&vote_count.gte=5&first_air_date.lte==${today}` +
+    (providerID
+      ? `&with_watch_providers=${providerID}&watch_region=${region}`
+      : "") +
+    (page ? `&page=${page}` : "") +
+    (genre ? `&with_genres=${genre}` : "") +
+    (origin ? `&with_origin_country=${origin}` : "");
+
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "results" in json ? json["results"] : [];
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return [];
+    });
+};
+
+const discoverMovies = (providerID, region = "US", page, genre, origin) => {
+  let start = `${new Date().getFullYear() - 2}-01-01`;
+  let today = new Date().toISOString().split("T")[0];
+
+  let url =
+    `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=popularity.desc&vote_average.gte=5&vote_count.gte=10&primary_release_date.lte=${today}` +
+    (providerID
+      ? `&with_watch_providers=${providerID}&watch_region=${region}`
+      : "") +
+    (page ? `&page=${page}` : "") +
+    (genre ? `&with_genres=${genre}` : "") +
+    (origin ? `&with_origin_country=${origin}` : "");
+
+  //console.log({url})
+
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "results" in json ? json["results"] : [];
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return [];
+    });
+};
+const trendingTVShows = () => {
+  let url = `https://api.themoviedb.org/3/trending/tv/day?language=fr-FR`;
+
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "results" in json ? json["results"] : [];
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return [];
+    });
+};
+
+const trendingMovies = () => {
+  let url = `https://api.themoviedb.org/3/trending/movie/day?language=fr-FR`;
+
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "results" in json ? json["results"] : [];
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return [];
+    });
+};
+
+const sortedMovies = (category = "popular", page) => {
+  //console.log({ category });
+
+  let url =
+    `https://api.themoviedb.org/3/movie/${category}?language=fr-FR&vote_average.gte=5` +
+    (page ? `&page=${page}` : "");
+
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "results" in json ? json["results"] : [];
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return [];
+    });
+};
+
+const sortedTV = (category = "popular", page) => {
+  //console.log({ category });
+
+  let url =
+    `https://api.themoviedb.org/3/tv/${category}?language=fr-FR&vote_average.gte=5` +
+    (page ? `&page=${page}` : "");
+
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "results" in json ? json["results"] : [];
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return [];
+    });
+};
+
+const searchTVShows = (page = 1, query = "") => {
+  let url = `https://api.themoviedb.org/3/search/tv?query=${query}&include_adult=false&language=en-US&page=${page}`;
+
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "results" in json ? json["results"] : [];
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return [];
+    });
+};
+
+const searchMovies = (page = 1, query = "") => {
+  let url = `https://api.themoviedb.org/3/search/movie?query=${query}&include_adult=false&language=en-US&page=${page}`;
+
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "results" in json ? json["results"] : [];
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return [];
+    });
+};
+
+const getCastTeam = (id = 1, type = "tv") => {
+  if (!id) return [];
+  if (!type) return [];
+  if (!["tv", "movie"].includes(type)) return [];
+
+  let url = `https://api.themoviedb.org/3/${type}/${id}/credits?language=fr-FR`;
+
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "cast" in json
+        ? json["cast"]
+            .filter((cast) => cast["known_for_department"] == "Acting")
+            .map((cast) => cast["original_name"])
+            // .map((cast, i) => cast["name"])
+            .sort(
+              (c1, c2) =>
+                parseInt(c1["order"] ?? 0) - parseInt(c2["order"] ?? 0)
+            )
+        : [];
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return [];
+    });
+};
+
+// (async () => {
+//   require("fs").writeFileSync(
+//     "./static/providers.json",
+//     JSON.stringify(await getProviders())
+//   );
+// })();
+// https://api.themoviedb.org/3/discover/movie?api_key=###&with_watch_providers=8&watch_region=CA
+
+// REMOTE IMAGE
+// https://image.tmdb.org/t/p/original/xxxxxxxxxxxxxxxxxxx.svg
+// https://image.tmdb.org/t/p/original/xxxxxxxxxxxxxxxxxxx.png
+// https://image.tmdb.org/t/p/w500/xxxxxxxxxxxxxxxxxxx.png
+
+module.exports = {
+  discoverTVShows,
+  discoverMovies,
+  getTVGenres,
+  getMovieGenres,
+  getProviders,
+  findMovie,
+  findShow,
+  externalSourceMovie,
+  externalSourceShow,
+  getSeason,
+  trendingMovies,
+  trendingTVShows,
+  sortedMovies,
+  sortedTV,
+  searchTVShows,
+  searchMovies,
+  getCastTeam,
+};
