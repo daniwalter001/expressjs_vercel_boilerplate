@@ -9,7 +9,6 @@
     "provider_name": "Apple TV+",
     "provider_id": 350
   },
-
   {
     "region": "US",
     "provider_name": "Adult Swim",
@@ -25,10 +24,45 @@
     "provider_name": "Amazon Prime Video",
     "provider_id": 9
   },
-
+  {
+    "region": "US",
+    "provider_name": "Disney Plus",
+    "provider_id": 337
+  },
+  {
+    "region": "US",
+    "provider_name": "Hulu",
+    "provider_id": 15
+  },
   {
     "region": "FR",
-    "provider_name": "Canal+ Premium",
-    "provider_id": 2101
+    "provider_name": "Animation Digital Network",
+    "provider_id": 415
+  },
+  {
+    "region": "US",
+    "provider_name": "Starz",
+    "provider_id": 43
+  },
+  {
+    "region": "US",
+    "provider_name": "Crunchyroll",
+    "provider_id": 283
+  },
+
+  {
+    "region": "US",
+    "provider_name": "Peacock",
+    "provider_id": 386
+  },
+  {
+    "region": "US",
+    "provider_name": "AMC",
+    "provider_id": 80
+  },
+  {
+    "region": "US",
+    "provider_name": "Paramount Plus",
+    "provider_id": 531
   }
 ]
