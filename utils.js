@@ -1,22 +1,7 @@
-const genres = { popularity: "Popularity", newly_added: "Nouveau" };
-const categories = [
-  "action",
-  "adventure",
-  "comedy",
-  "drama",
-  "fantasy",
-  "music",
-  "romance",
-  "sci-fi",
-  "seinen",
-  "shojo",
-  "slice+of+life",
-  "sports",
-  "supernatural",
-  "thriller",
-];
+const categories = { popularity: "Popularity", newly_added: "Nouveau" };
 
 const years = [
+  "2024",
   "2023",
   "2022",
   "2021",
@@ -79,4 +64,4 @@ let toClean = (clean = "") => {
   return clean.replace(/\+/g, " ");
 };
 
-module.exports = { toClean, toKey, categories, genres, years, origins };
+module.exports = { toClean, toKey, years, origins, categories };
