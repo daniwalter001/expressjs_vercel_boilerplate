@@ -407,7 +407,7 @@ class CatalogAddon {
         description: show?.overview,
         id:
           type == "series"
-            ? id
+            ? config.prefix + id?.toString()
             : show?.imdb_id ??
               (imdb && "imdb_id" in imdb ? imdb["imdb_id"] : ""),
         type: type,
