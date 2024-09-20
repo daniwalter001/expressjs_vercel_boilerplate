@@ -1,9 +1,9 @@
 const config = {
   id: "strm.daiki.tmdb_ctlg",
-  prefix: "tmdb.addon.test",
+  prefix: "tmdb.addon",
   // prefix: "tmdb_ctlg.addon",
   version: "1.0.0",
-  name: "Catalog Vercel Test",
+  name: "Catalog Vercel",
   description: "From Catalog Vercel",
   logo: "https://raw.githubusercontent.com/daniwalter001/daniwalter001/main/52852137.png",
   cdn_path: "https://image.tmdb.org/t/p/original",
