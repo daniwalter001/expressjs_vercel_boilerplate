@@ -227,6 +227,12 @@
 
   {
     "region": "US",
+    "provider_name": "Rakuten Viki",
+    "provider_id": 344
+  },
+
+  {
+    "region": "US",
     "provider_name": "Zee5",
     "provider_id": 232
   },

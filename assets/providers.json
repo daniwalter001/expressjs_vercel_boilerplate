@@ -64,5 +64,10 @@
     "region": "US",
     "provider_name": "Paramount Plus",
     "provider_id": 531
+  },
+  {
+    "region": "US",
+    "provider_name": "Rakuten Viki",
+    "provider_id": 344
   }
 ]

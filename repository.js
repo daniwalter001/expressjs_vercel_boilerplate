@@ -6,7 +6,7 @@ const vote_count = 10;
 
 const getProviders = () => {
   const url =
-    "https://api.themoviedb.org/3/watch/providers/tv?language=fr-FR&watch_region=FR";
+    "https://api.themoviedb.org/3/watch/providers/tv?language=fr-FR&watch_region=US";
   const options = {
     method: "GET",
     headers: {
@@ -482,7 +482,6 @@ const getCastTeam = (id = 1, type = "tv") => {
         ? json["cast"]
             .filter((cast) => cast["known_for_department"] == "Acting")
             .map((cast) => cast["original_name"])
-            // .map((cast, i) => cast["name"])
             .sort(
               (c1, c2) =>
                 parseInt(c1["order"] ?? 0) - parseInt(c2["order"] ?? 0)
@@ -497,11 +496,10 @@ const getCastTeam = (id = 1, type = "tv") => {
 
 // (async () => {
 //   require("fs").writeFileSync(
-//     "./static/providers.json",
+//     "./assets/providers.bak.json",
 //     JSON.stringify(await getProviders())
 //   );
 // })();
-// https://api.themoviedb.org/3/discover/movie?api_key=###&with_watch_providers=8&watch_region=CA
 
 // REMOTE IMAGE
 // https://image.tmdb.org/t/p/original/xxxxxxxxxxxxxxxxxxx.svg
