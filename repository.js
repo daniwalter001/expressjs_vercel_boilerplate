@@ -332,8 +332,8 @@ const sortedMovies = (category = "popularity", page, genre = "", year = "") => {
     case "popularity":
       url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=vote_average.desc&without_genres=10755&vote_count.gte=200&vote_count.gte=${vote_count}`;
       break;
-
     case "newly_added":
+    case "new":
       url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=primary_release_date.desc&primary_release_date.lte=${today}&vote_average.gte=${vote_average}&vote_count.gte=${vote_count}`;
       break;
     default:
@@ -372,13 +372,18 @@ const sortedTV = (category = "popularity", page, genre = "", year = "") => {
   const end = `${year}-12-31`;
   const today = new Date().toISOString().split("T")[0];
 
-  let url = `https://api.themoviedb.org/3/discover/tv?include_adult=false&language=fr-FR&sort_by=vote_average.desc&vote_average.gte=${vote_average}&vote_count.gte=${vote_count}`;
+  let url = `https://api.themoviedb.org/3/discover/tv?include_adult=false&language=fr-FR&sort_by=vote_average.desc&vote_average.gte=${vote_average}&vote_count.gte=${vote_count}&first_air_date.lte=${today}`;
 
   switch (category) {
     case "top_rated":
     case "popularity":
       url = `https://api.themoviedb.org/3/discover/tv?include_adult=false&language=fr-FR&sort_by=vote_average.desc&vote_count.gte=200&vote_average.gte=${vote_average}`;
       break;
+    case "new":
+    // url = `https://api.themoviedb.org/3/discover/tv?include_adult=false&language=fr-FR&sort_by=first_air_date.desc&vote_average.gte=${vote_average}&vote_count.gte=${
+    //   +vote_count + 10
+    // }&first_air_date.lte=${today}`;
+    // break;
     case "newly_added":
       url = `https://api.themoviedb.org/3/discover/tv?include_adult=false&language=fr-FR&sort_by=first_air_date.desc&vote_average.gte=${vote_average}&first_air_date.lte=${today}&vote_count.gte=${vote_count}`;
       break;

@@ -1,6 +1,6 @@
 const config = {
   id: "strm.daiki.tmdb_ctlg",
-  prefix: "tmdb.addon",
+  prefix: "tmdb",
   // prefix: "tmdb_ctlg.addon",
   version: "1.0.0",
   name: "Catalog Vercel",
