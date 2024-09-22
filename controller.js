@@ -94,10 +94,9 @@ class CatalogAddon {
           name: "genre",
           options: [...years],
         },
-        { name: "search" },
         { name: "skip" },
       ],
-      extraSupported: ["search", "genre", "skip"],
+      extraSupported: ["genre", "skip"],
       name: "New",
     });
 
@@ -110,10 +109,9 @@ class CatalogAddon {
           name: "genre",
           options: [...years],
         },
-        { name: "search" },
         { name: "skip" },
       ],
-      extraSupported: ["search", "genre", "skip"],
+      extraSupported: ["genre", "skip"],
       name: "New",
     });
 
@@ -137,10 +135,9 @@ class CatalogAddon {
               ...Object.values(origins),
             ],
           },
-          { name: "search" },
           { name: "skip" },
         ],
-        extraSupported: ["search", "genre", "skip"],
+        extraSupported: ["genre", "skip"],
         name: provider.provider_name,
       });
 
@@ -161,10 +158,9 @@ class CatalogAddon {
               ...Object.values(origins),
             ],
           },
-          { name: "search" },
           { name: "skip" },
         ],
-        extraSupported: ["search", "genre", "skip"],
+        extraSupported: ["genre", "skip"],
         name: provider.provider_name,
       });
     });
@@ -184,10 +180,9 @@ class CatalogAddon {
     res.setHeader("Access-Control-Allow-Headers", "*");
     res.setHeader("Content-Type", "application/json");
 
-    const { type, id, skip, genre: extra } = parseRequest(req);
+    const { type, id, skip, genre: extra, search } = parseRequest(req);
     console.log({ type, id, skip, extra });
 
-    let search = null;
     let genre = null;
     let year = null;
     let category = null;
@@ -218,13 +213,13 @@ class CatalogAddon {
       console.log({ page: _skip });
 
       if (search) {
-        console.log(`Searching and looking for...${extra.search}`);
+        console.log(`Searching and looking for...${search}`);
         switch (type) {
           case "series":
-            catalog = await searchTVShows(skip, extra.search);
+            catalog = await searchTVShows(_skip, search);
             break;
           case "movie":
-            catalog = await searchMovies(skip, extra.search);
+            catalog = await searchMovies(_skip, search);
             break;
 
           default:

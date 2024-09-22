@@ -13,7 +13,8 @@ const parseRequest = (req) => {
   const parsed = new URLSearchParams(extra);
   const genre = parsed.get("genre");
   const skip = parsed.get("skip");
-  return { type, id, skip, genre };
+  const search = parsed.get("search");
+  return { type, id, skip, genre, search };
 };
 
 module.exports = { parseRequest };
