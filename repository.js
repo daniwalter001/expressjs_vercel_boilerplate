@@ -2,7 +2,7 @@ const { config } = require("./config");
 const fetch = require("node-fetch");
 
 const vote_average = 5;
-const vote_count = 10;
+const vote_count = 3;
 
 const getProviders = () => {
   const url =
@@ -213,9 +213,13 @@ const discoverTVShows = (
     (page ? `&page=${page}` : "") +
     (genre ? `&with_genres=${genre}` : "") +
     (origin ? `&with_origin_country=${origin}` : "") +
-    (category == "newly_added"
-      ? "&sort_by=first_air_date.desc"
-      : `&sort_by=popularity.desc`);
+    (category == "popularity" || !!genre
+      ? `&sort_by=popularity.desc`
+      : "&sort_by=first_air_date.desc") +
+    (["newly_added", "popularity"].includes(category) ||
+    (category == null && genre == null)
+      ? `&without_genres=10764`
+      : "");
 
   const options = {
     method: "GET",
@@ -255,9 +259,13 @@ const discoverMovies = (
     (page ? `&page=${page}` : "") +
     (genre ? `&with_genres=${genre}` : "") +
     (origin ? `&with_origin_country=${origin}` : "") +
-    (category == "newly_added"
-      ? "&sort_by=primary_release_date.desc"
-      : `&sort_by=popularity.desc`);
+    (category == "popularity" || !!genre
+      ? `&sort_by=popularity.desc`
+      : "&sort_by=first_air_date.desc") +
+    (["newly_added", "popularity"].includes(category) ||
+    (category == null && genre == null)
+      ? `&without_genres=10764`
+      : "");
 
   const options = {
     method: "GET",
@@ -346,6 +354,9 @@ const sortedMovies = (category = "popularity", page, genre = "", year = "") => {
     (!!genre ? `&with_genres=${genre}` : "") +
     (!!year
       ? `&primary_release_date.lte=${end}&primary_release_date.gte=${start}`
+      : "") +
+    (["newly_added", "popularity"].includes(category) || category == null
+      ? `&without_genres=10764`
       : "");
 
   const options = {
@@ -379,12 +390,8 @@ const sortedTV = (category = "popularity", page, genre = "", year = "") => {
     case "popularity":
       url = `https://api.themoviedb.org/3/discover/tv?include_adult=false&language=fr-FR&sort_by=vote_average.desc&vote_count.gte=200&vote_average.gte=${vote_average}`;
       break;
-    case "new":
-    // url = `https://api.themoviedb.org/3/discover/tv?include_adult=false&language=fr-FR&sort_by=first_air_date.desc&vote_average.gte=${vote_average}&vote_count.gte=${
-    //   +vote_count + 10
-    // }&first_air_date.lte=${today}`;
-    // break;
     case "newly_added":
+    case "new":
       url = `https://api.themoviedb.org/3/discover/tv?include_adult=false&language=fr-FR&sort_by=first_air_date.desc&vote_average.gte=${vote_average}&first_air_date.lte=${today}&vote_count.gte=${vote_count}`;
       break;
     default:
@@ -395,7 +402,10 @@ const sortedTV = (category = "popularity", page, genre = "", year = "") => {
     url +
     (page ? `&page=${page}` : "") +
     (!!genre ? `&with_genres=${genre}` : "") +
-    (!!year ? `&first_air_date.lte=${end}&first_air_date.gte=${start}` : "");
+    (!!year ? `&first_air_date.lte=${end}&first_air_date.gte=${start}` : "") +
+    (["newly_added", "popularity"].includes(category) || category == null
+      ? `&without_genres=10764`
+      : "");
 
   const options = {
     method: "GET",
