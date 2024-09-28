@@ -261,7 +261,7 @@ const discoverMovies = (
     (origin ? `&with_origin_country=${origin}` : "") +
     (category == "popularity" || !!genre
       ? `&sort_by=popularity.desc`
-      : "&sort_by=first_air_date.desc") +
+      : "&sort_by=primary_release_date.desc") +
     (["newly_added", "popularity"].includes(category) ||
     (category == null && genre == null)
       ? `&without_genres=10764`
