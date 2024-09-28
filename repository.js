@@ -342,7 +342,7 @@ const sortedMovies = (category = "popularity", page, genre = "", year = "") => {
       break;
     case "newly_added":
     case "new":
-      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=primary_release_date.desc&primary_release_date.lte=${today}&vote_average.gte=${vote_average}&vote_count.gte=${vote_count}`;
+      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=primary_release_date.desc&vote_average.gte=${vote_average}&vote_count.gte=${vote_count}`;
       break;
     default:
       break;
@@ -354,10 +354,12 @@ const sortedMovies = (category = "popularity", page, genre = "", year = "") => {
     (!!genre ? `&with_genres=${genre}` : "") +
     (!!year
       ? `&primary_release_date.lte=${end}&primary_release_date.gte=${start}`
-      : "") +
+      : `&primary_release_date.lte=${today}`) +
     (["newly_added", "popularity"].includes(category) || category == null
       ? `&without_genres=10764`
       : "");
+
+  // console.log({ url });
 
   const options = {
     method: "GET",
