@@ -2,7 +2,7 @@ const { config } = require("./config");
 const fetch = require("node-fetch");
 
 const vote_average = 5;
-const vote_count = 3;
+const vote_count = 10;
 
 const getProviders = () => {
   const url =
