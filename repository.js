@@ -359,7 +359,7 @@ const sortedMovies = (category = "popularity", page, genre = "", year = "") => {
       ? `&without_genres=10764`
       : "");
 
-  // console.log({ url });
+  console.log({ url });
 
   const options = {
     method: "GET",
