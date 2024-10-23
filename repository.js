@@ -337,10 +337,10 @@ const sortedMovies = (category = "popularity", page, genre = "", year = "") => {
 
   switch (category) {
     case "top_rated":
-      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=vote_average.desc&without_genres=10755&vote_count.gte=${vote_count}`;
+      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=vote_average.desc&without_genres=10755&vote_count.gte=${vote_count}&vote_average.gte=${vote_average}`;
       break;
     case "popularity":
-      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=vote_average.desc&without_genres=10755&vote_count.gte=200&vote_count.gte=${vote_count}`;
+      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=vote_average.desc&without_genres=10755&vote_count.gte=200&vote_average.gte=${vote_average}`;
       break;
     case "newly_added":
     case "new":
