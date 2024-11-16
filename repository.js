@@ -240,6 +240,58 @@ const discoverTVShows = (
     });
 };
 
+const onAirTVShows = (
+  providerID,
+  region = "US",
+  page,
+  genre,
+  origin,
+  category
+) => {
+  let today = new Date().toISOString().split("T")[0];
+  let tomorrow = new Date(new Date().getTime() + 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0];
+  let sixMonthAgo =
+    new Date(new Date().getTime() - 6 * 30 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0]
+      .slice(0, 8) + "01";
+
+  let url =
+    `https://api.themoviedb.org/3/discover/tv?air_date.gte=${sixMonthAgo}&air_date.lte=${tomorrow}&first_air_date.gte=2010-01-01&include_adult=false&include_null_first_air_dates=false&sort_by=popularity.desc&vote_average.gte=6&vote_count.gte=40&language=fr-FR` +
+    (providerID
+      ? `&with_watch_providers=${providerID}&watch_region=${region}`
+      : "") +
+    (page ? `&page=${page}` : "") +
+    (genre ? `&with_genres=${genre}` : "") +
+    (origin ? `&with_origin_country=${origin}` : "") +
+    (["newly_added", "popularity"].includes(category) ||
+    (category == null && genre == null)
+      ? `&without_genres=10764`
+      : "");
+
+  console.log({ url });
+
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "results" in json ? json["results"] : [];
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return [];
+    });
+};
+
 const discoverMovies = (
   providerID,
   region = "US",
@@ -538,4 +590,5 @@ module.exports = {
   searchTVShows,
   searchMovies,
   getCastTeam,
+  onAirTVShows,
 };

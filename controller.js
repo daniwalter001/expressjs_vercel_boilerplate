@@ -17,6 +17,8 @@ const {
   findMovie,
   getCastTeam,
   getSeason,
+  onAirMovies,
+  onAirTVShows,
 } = require("./repository");
 const { toClean, years, origins, categories } = require("./utils");
 
@@ -35,7 +37,7 @@ class CatalogAddon {
 
     manifest.catalogs = [];
 
-    //new
+    //Default
     manifest.catalogs.push({
       type: "movie",
       id: `${config.prefix}&id=top`,
@@ -82,6 +84,37 @@ class CatalogAddon {
       ],
       extraSupported: ["search", "genre", "skip"],
       name: "All",
+    });
+
+    //onair
+    manifest.catalogs.push({
+      type: "movie",
+      id: `${config.prefix}&id=onair`,
+      genres: [...genres.map((el) => el.name)],
+      extra: [
+        {
+          name: "genre",
+          options: [...genres.map((el) => el.name)],
+        },
+        { name: "skip" },
+      ],
+      extraSupported: ["genre", "skip"],
+      name: "On Air",
+    });
+
+    manifest.catalogs.push({
+      type: "series",
+      id: `${config.prefix}&id=onair`,
+      genres: [...genres.map((el) => el.name)],
+      extra: [
+        {
+          name: "genre",
+          options: [...genres.map((el) => el.name)],
+        },
+        { name: "skip" },
+      ],
+      extraSupported: ["genre", "skip"],
+      name: "On Air",
     });
 
     //new
@@ -226,11 +259,11 @@ class CatalogAddon {
             break;
         }
       } else {
-        if (!provider && !category & !origin) {
-          console.log({ genre });
+        if (!provider && !category && !origin) {
+          console.log({ providerId });
 
-          if (providerId == "new") {
-            category = "new";
+          if (["onair", "new"].includes(providerId)) {
+            category = providerId;
           } else if (providerId == "top") {
             if (!!genre) {
               category = "trending+genre";
@@ -253,6 +286,24 @@ class CatalogAddon {
                   : await trendingTVShows();
               break;
 
+            case "onair":
+              catalog =
+                type == "movie"
+                  ? await sortedMovies(
+                      "popularity",
+                      _skip,
+                      extra && genre ? genre.id : null,
+                      null
+                    )
+                  : await onAirTVShows(
+                      null,
+                      "US",
+                      _skip,
+                      extra && genre ? genre.id : null,
+                      origin,
+                      category
+                    );
+              break;
             case "trending+genre":
             case "new":
             default:
@@ -284,14 +335,24 @@ class CatalogAddon {
             );
           } else {
             try {
-              catalog = await discoverTVShows(
-                provider?.provider_id,
-                provider?.region ?? "US",
-                _skip,
-                extra && genre ? genre?.id : null,
-                extra ? origin : null,
-                category
-              );
+              catalog =
+                category == "onair"
+                  ? await onAirTVShows(
+                      provider?.provider_id,
+                      provider?.region ?? "US",
+                      _skip,
+                      extra && genre ? genre.id : null,
+                      extra ? origin : null,
+                      category
+                    )
+                  : await discoverTVShows(
+                      provider?.provider_id,
+                      provider?.region ?? "US",
+                      _skip,
+                      extra && genre ? genre?.id : null,
+                      extra ? origin : null,
+                      category
+                    );
             } catch (error) {
               console.log({ error });
             }
@@ -468,23 +529,6 @@ class CatalogAddon {
       return res.send({ meta });
     });
   }
-
-  /**
-   *  Handle Streams
-   * @param {import("express").Request} req
-   * @param {import("express").Response} res
-   * @returns
-   */
-  // static handleStram(req, res) {
-  //   res.setHeader("Access-Control-Allow-Origin", "*");
-  //   res.setHeader("Access-Control-Allow-Headers", "*");
-  //   res.setHeader("Content-Type", "application/json");
-
-  //   const { type, id, skip, genre } = parseRequest(req);
-  //   console.log({ type, id, skip, genre });
-
-  //   return res.send({ meta: [] });
-  // }
 }
 
 module.exports = CatalogAddon;

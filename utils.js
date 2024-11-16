@@ -1,4 +1,8 @@
-const categories = { popularity: "Popularity", newly_added: "Nouveau" };
+const categories = {
+  popularity: "Popularity",
+  newly_added: "Nouveau",
+  onair: "On Air",
+};
 
 const years = [
   "2024",
