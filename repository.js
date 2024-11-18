@@ -252,14 +252,14 @@ const onAirTVShows = (
   let tomorrow = new Date(new Date().getTime() + 24 * 60 * 60 * 1000)
     .toISOString()
     .split("T")[0];
-  let sixMonthAgo =
-    new Date(new Date().getTime() - 6 * 30 * 24 * 60 * 60 * 1000)
+  let threeMonthsAgo =
+    new Date(new Date().getTime() - 3 * 30 * 24 * 60 * 60 * 1000)
       .toISOString()
       .split("T")[0]
       .slice(0, 8) + "01";
 
   let url =
-    `https://api.themoviedb.org/3/discover/tv?air_date.gte=${sixMonthAgo}&air_date.lte=${tomorrow}&first_air_date.gte=2010-01-01&include_adult=false&include_null_first_air_dates=false&sort_by=popularity.desc&vote_average.gte=6&vote_count.gte=40&language=fr-FR` +
+    `https://api.themoviedb.org/3/discover/tv?air_date.gte=${threeMontshAgo}&air_date.lte=${tomorrow}&first_air_date.gte=2000-01-01&include_adult=false&include_null_first_air_dates=false&sort_by=popularity.desc&vote_average.gte=7&vote_count.gte=20&language=fr-FR` +
     (providerID
       ? `&with_watch_providers=${providerID}&watch_region=${region}`
       : "") +
