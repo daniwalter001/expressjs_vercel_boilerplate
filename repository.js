@@ -259,7 +259,7 @@ const onAirTVShows = (
       .slice(0, 8) + "01";
 
   let url =
-    `https://api.themoviedb.org/3/discover/tv?air_date.gte=${threeMontshAgo}&air_date.lte=${tomorrow}&first_air_date.gte=2000-01-01&include_adult=false&include_null_first_air_dates=false&sort_by=popularity.desc&vote_average.gte=5&vote_count.gte=20&language=fr-FR` +
+    `https://api.themoviedb.org/3/discover/tv?air_date.gte=${threeMonthsAgo}&air_date.lte=${tomorrow}&first_air_date.gte=2000-01-01&include_adult=false&include_null_first_air_dates=false&sort_by=popularity.desc&vote_average.gte=6&vote_count.gte=15&language=fr-FR` +
     (providerID
       ? `&with_watch_providers=${providerID}&watch_region=${region}`
       : "") +
