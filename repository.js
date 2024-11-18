@@ -267,7 +267,7 @@ const onAirTVShows = (
     (genre ? `&with_genres=${genre}` : "") +
     (origin ? `&with_origin_country=${origin}` : "") +
     (["newly_added", "popularity"].includes(category) ||
-    (category == null && genre == null)
+    (category == null || genre == null)
       ? `&without_genres=10764`
       : "");
 
