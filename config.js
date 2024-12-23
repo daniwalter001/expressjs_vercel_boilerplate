@@ -2,7 +2,7 @@ const config = {
   id: "strm.daiki.tmdb_ctlg",
   prefix: "tmdb",
   // prefix: "tmdb_ctlg.addon",
-  version: "1.0.2",
+  version: "1.0.3",
   name: "Catalog Vercel",
   description: "From Catalog Vercel",
   // logo: "https://miro.medium.com/v2/resize:fit:720/format:webp/1*idLhmtcMdWeN-UMGR0ROjQ.png",
