@@ -218,7 +218,7 @@ const discoverTVShows = (
       : "&sort_by=first_air_date.desc") +
     (["newly_added", "popularity"].includes(category) ||
     (category == null && genre == null)
-      ? `&without_genres=10764,10766,10767`
+      ? `&without_genres=10764|10766|10767`
       : "");
 
   const options = {
@@ -268,7 +268,7 @@ const onAirTVShows = (
     (origin ? `&with_origin_country=${origin}` : "") +
     (["newly_added", "popularity"].includes(category) ||
     (category == null || genre == null)
-      ? `&without_genres=10764,10766,10767`
+      ? `&without_genres=10764|10766|10767`
       : "");
 
   const options = {
@@ -314,7 +314,7 @@ const discoverMovies = (
       : "&sort_by=primary_release_date.desc") +
     (["newly_added", "popularity"].includes(category) ||
     (category == null && genre == null)
-      ? `&without_genres=10764,10766,10767`
+      ? `&without_genres=10764|10766|10767`
       : "");
 
   const options = {
@@ -408,7 +408,7 @@ const sortedMovies = (category = "popularity", page, genre = "", year = "") => {
       ? `&primary_release_date.lte=${end}&primary_release_date.gte=${start}`
       : `&primary_release_date.lte=${today}`) +
     (["newly_added", "popularity"].includes(category) || category == null
-      ? `&without_genres=10764,10766,10767`
+      ? `&without_genres=10764|10766|10767`
       : "");
 
   console.log({ url });
@@ -458,7 +458,7 @@ const sortedTV = (category = "popularity", page, genre = "", year = "") => {
     (!!genre ? `&with_genres=${genre}` : "") +
     (!!year ? `&first_air_date.lte=${end}&first_air_date.gte=${start}` : "") +
     (["newly_added", "popularity"].includes(category) || category == null
-      ? `&without_genres=10764,10766,10767`
+      ? `&without_genres=10764|10766|10767`
       : "");
 
   const options = {
