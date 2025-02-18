@@ -123,43 +123,54 @@ class CatalogAddon {
         type: "movie",
         imdbRating:
           show && "parts" in show
-            ? show?.parts?.reduce((cumul, currentValue) => {
-                cumul = cumul + currentValue?.vote_average;
-                return cumul;
-              }, 0) / show?.parts?.length
+            ? show?.parts
+                ?.filter((el) => !!el && el?.id && !!el?.release_date)
+                ?.reduce((cumul, currentValue) => {
+                  cumul = cumul + (currentValue?.vote_average || 0);
+                  return cumul;
+                }, 0) / show?.parts?.length
             : 5,
         released:
           show && "parts" in show && show?.parts?.length > 0
-            ? `${show?.parts?.pop()?.release_date}T05:00:00.000Z`
+            ? `${
+                show?.parts.find((el) => !!el?.id && !!el?.release_date)
+                  ?.release_date
+              }T05:00:00.000Z`
             : new Date().toISOString(),
         // genres: show?.genres?.map((el) => el?.name),
         poster: config.cdn_path + show?.poster_path,
         background: config.cdn_path + show?.backdrop_path,
       };
 
+      // console.log(meta);
+
       if (show?.parts) {
         meta.videos = await Promise.all(
-          show?.parts.map(async (movie, index) => {
-            const imdbIdJson = await externalSourceMovie(movie?.id);
+          show?.parts
+            ?.filter((el) => {
+              console.log(el.id);
+              return !!el && el?.id && !!el?.release_date;
+            })
+            .map(async (movie, index) => {
+              const imdbIdJson = await externalSourceMovie(movie?.id);
 
-            let title = `${movie?.title}`;
-            let id = imdbIdJson ? `${imdbIdJson["imdb_id"]}` : "";
+              let title = `${movie?.title}`;
+              let id = imdbIdJson ? `${imdbIdJson["imdb_id"]}` : "";
 
-            let t = {
-              id,
-              title,
-              overview: movie?.overview,
-              type: "movie",
-              released:
-                `${movie?.release_date ?? new Date().toISOString()}`.substring(
-                  0,
-                  10
-                ) + "T05:00:00.000Z",
-              thumbnail: config.cdn_path + movie?.backdrop_path,
-            };
+              let t = {
+                id,
+                title,
+                overview: movie?.overview,
+                type: "movie",
+                released:
+                  `${
+                    movie?.release_date ?? new Date().toISOString()
+                  }`.substring(0, 10) + "T05:00:00.000Z",
+                thumbnail: config.cdn_path + movie?.backdrop_path,
+              };
 
-            return t;
-          })
+              return t;
+            })
         );
 
         meta.videos = (meta.videos ?? []).flat();
