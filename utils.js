@@ -3,6 +3,7 @@ const categories = {
   newly_added: "Nouveau",
   onair: "On Air",
   top: "Trending",
+  top_rated: "Top Rated",
 };
 
 const years = [

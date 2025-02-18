@@ -424,12 +424,24 @@ const sortedMovies = (category = "popularity", page, genre = "", year = "") => {
   return fetch(url, options)
     .then((res) => res.json())
     .then((json) => {
-      let r = "results" in json ? json["results"] : [];
+      let r =
+        "results" in json
+          ? json
+          : {
+              results: [],
+              total_pages: 1,
+              total_results: 0,
+            };
+      // let r = "results" in json ? json["results"] : [];
       return r;
     })
     .catch((err) => {
       console.error("error:" + err);
-      return [];
+      return {
+        results: [],
+        total_pages: 1,
+        total_results: 0,
+      };
     });
 };
 
@@ -518,6 +530,30 @@ const searchMovies = (page = 1, query = "") => {
     .then((res) => res.json())
     .then((json) => {
       return "results" in json ? json["results"] : [];
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return [];
+    });
+};
+
+const searchCollection = async (page = 1, query = "") => {
+  let url = `https://api.themoviedb.org/3/search/collection?query=${encodeURIComponent(
+    query
+  )}&include_adult=false&language=fr-FR&page=${page}`;
+
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "results" in json ? json : {};
     })
     .catch((err) => {
       console.error("error:" + err);
@@ -635,6 +671,7 @@ module.exports = {
   sortedTV,
   searchTVShows,
   searchMovies,
+  searchCollection,
   getCastTeam,
   onAirTVShows,
   getCollectionsFromMovies,

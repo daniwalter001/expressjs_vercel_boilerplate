@@ -8,6 +8,7 @@ const {
   externalSourceMovie,
   getCollectionsFromMovies,
   findCollection,
+  searchCollection,
 } = require("./repository");
 const { categories } = require("./utils");
 
@@ -38,15 +39,32 @@ class CatalogAddon {
           options: [...genres.map((el) => el.name)],
         },
         { name: "skip" },
+        { name: "search" },
       ],
-      extraSupported: ["genre", "skip"],
+      extraSupported: ["genre", "skip", "search"],
     });
 
-    //Default
+    //popular
     manifest.catalogs.push({
       name: "Collection Popular",
       type: "movie",
       id: `${config.prefix}&id=popularity`,
+      genres: [...genres.map((el) => el.name)],
+      extra: [
+        {
+          name: "genre",
+          options: [...genres.map((el) => el.name)],
+        },
+        { name: "skip" },
+      ],
+      extraSupported: ["genre", "skip"],
+    });
+
+    //top_rated
+    manifest.catalogs.push({
+      name: "Collection Top Rated",
+      type: "movie",
+      id: `${config.prefix}&id=top_rated`,
       genres: [...genres.map((el) => el.name)],
       extra: [
         {
@@ -174,6 +192,7 @@ class CatalogAddon {
     let genre = null;
     let category = null;
     let catalog = [];
+    let _skip = 1;
     let genresValues = genres.map((el) => el.name);
 
     let categoryId = id.split("&id=").pop();
@@ -188,59 +207,36 @@ class CatalogAddon {
     }
 
     try {
-      let _skip = Math.floor((skip ?? 0) / 19) + 1;
+      _skip = Math.floor((skip ?? 0) / 13) + 1;
       console.log({ page: _skip });
 
       if (search) {
         console.log(`Searching and looking for...${search}`);
-        catalog = await searchMovies(_skip, search);
+        catalog = await searchCollection(_skip, search);
       } else {
         console.log({ categoryId, category, genre });
 
         //newly_added, popularity for category
 
-        switch (categoryId) {
-          case "top":
-            catalog = await sortedMovies(
-              categoryId,
-              _skip,
-              genre ? genre.id : null,
-              undefined
-            );
-            break;
-          case "popularity":
-          // case "new":
-          case "newly_added":
-            catalog = await sortedMovies(
-              categoryId,
-              _skip,
-              extra && genre ? genre.id : null
-            );
-            break;
-          case "new":
-          default:
-            catalog = await trendingMovies();
-            break;
-        }
+        let r = await sortedMovies(
+          categoryId || "top",
+          _skip,
+          extra && genre ? genre.id : null
+        );
+
+        console.log({
+          total_pages: r?.total_pages,
+          total_results: r?.total_results,
+        });
+
+        catalog = r && "results" in r ? r.results : [];
       }
     } catch (error) {
       console.log(error);
       return Promise.resolve({ metas: [] });
     }
 
-    for (let index in catalog) {
-      let one = catalog[index];
-      if (type == "movie") {
-        let _imdbRequest = await externalSourceMovie(one?.id);
-        one["imdb_id"] =
-          "imdb_id" in _imdbRequest ? _imdbRequest["imdb_id"] : null;
-        catalog[index] = one;
-      }
-    }
-
-    let collection = await getCollectionsFromMovies(catalog);
-
-    console.log(collection.total_results);
+    let collection = search ? catalog : await getCollectionsFromMovies(catalog);
 
     let t = [
       ...collection?.results.map((one) => {
@@ -248,7 +244,7 @@ class CatalogAddon {
           name: one?.name,
           id: config.prefix + one?.id,
           type: "movie",
-          imdbRating: 7,
+          // imdbRating: 5,
           poster: config.cdn_path + one?.poster_path,
           background: config.cdn_path + one?.backdrop_path,
         };
