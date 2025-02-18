@@ -2,6 +2,7 @@ const categories = {
   popularity: "Popularity",
   newly_added: "Nouveau",
   onair: "On Air",
+  top: "Trending",
 };
 
 const years = [

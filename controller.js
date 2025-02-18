@@ -1,26 +1,15 @@
-const providers = require("./assets/providers");
 const { genres } = require("./assets/genres");
 const { manifest, config } = require("./config");
 const { parseRequest } = require("./helpers");
 const {
   searchMovies,
-  searchTVShows,
   sortedMovies,
-  sortedTV,
-  trendingTVShows,
   trendingMovies,
   externalSourceMovie,
-  discoverTVShows,
-  discoverMovies,
-  findShow,
-  externalSourceShow,
-  findMovie,
-  getCastTeam,
-  getSeason,
-  onAirMovies,
-  onAirTVShows,
+  getCollectionsFromMovies,
+  findCollection,
 } = require("./repository");
-const { toClean, years, origins, categories } = require("./utils");
+const { categories } = require("./utils");
 
 class CatalogAddon {
   /**
@@ -39,57 +28,9 @@ class CatalogAddon {
 
     //Default
     manifest.catalogs.push({
+      name: "Collection Trending",
       type: "movie",
       id: `${config.prefix}&id=top`,
-      genres: [
-        ...Object.values(categories),
-        ...genres.map((el) => el.name),
-        ...Object.values(origins),
-      ],
-      extra: [
-        {
-          name: "genre",
-          options: [
-            ...Object.values(categories),
-            ...genres.map((el) => el.name),
-            ...Object.values(origins),
-          ],
-        },
-        { name: "search" },
-        { name: "skip" },
-      ],
-      extraSupported: ["search", "genre", "skip"],
-      name: "All",
-    });
-
-    manifest.catalogs.push({
-      type: "series",
-      id: `${config.prefix}&id=top`,
-      genres: [
-        ...Object.values(categories),
-        ...genres.map((el) => el.name),
-        ...Object.values(origins),
-      ],
-      extra: [
-        {
-          name: "genre",
-          options: [
-            ...Object.values(categories),
-            ...genres.map((el) => el.name),
-            ...Object.values(origins),
-          ],
-        },
-        { name: "search" },
-        { name: "skip" },
-      ],
-      extraSupported: ["search", "genre", "skip"],
-      name: "All",
-    });
-
-    //onair
-    manifest.catalogs.push({
-      type: "movie",
-      id: `${config.prefix}&id=onair`,
       genres: [...genres.map((el) => el.name)],
       extra: [
         {
@@ -99,12 +40,13 @@ class CatalogAddon {
         { name: "skip" },
       ],
       extraSupported: ["genre", "skip"],
-      name: "On Air",
     });
 
+    //Default
     manifest.catalogs.push({
-      type: "series",
-      id: `${config.prefix}&id=onair`,
+      name: "Collection Popular",
+      type: "movie",
+      id: `${config.prefix}&id=popularity`,
       genres: [...genres.map((el) => el.name)],
       extra: [
         {
@@ -114,101 +56,120 @@ class CatalogAddon {
         { name: "skip" },
       ],
       extraSupported: ["genre", "skip"],
-      name: "On Air",
+    });
+
+    manifest.catalogs.push({
+      name: "Collection Newly Added",
+      type: "movie",
+      id: `${config.prefix}&id=newly_added`,
+      genres: [...genres.map((el) => el.name)],
+      extra: [
+        {
+          name: "genre",
+          options: [...genres.map((el) => el.name)],
+        },
+        { name: "skip" },
+      ],
+      extraSupported: ["genre", "skip"],
     });
 
     //new
-    manifest.catalogs.push({
-      type: "movie",
-      id: `${config.prefix}&id=new`,
-      genres: [...years],
-      extra: [
-        {
-          name: "genre",
-          options: [...years],
-        },
-        { name: "skip" },
-      ],
-      extraSupported: ["genre", "skip"],
-      name: "New",
-    });
-
-    manifest.catalogs.push({
-      type: "series",
-      id: `${config.prefix}&id=new`,
-      genres: [...years],
-      extra: [
-        {
-          name: "genre",
-          options: [...years],
-        },
-        { name: "skip" },
-      ],
-      extraSupported: ["genre", "skip"],
-      name: "New",
-    });
-
-    //providers
-
-    providers.forEach((provider) => {
-      manifest.catalogs.push({
-        type: "movie",
-        id: `${config.prefix}&id=${provider.provider_id}`,
-        genres: [
-          ...Object.values(categories),
-          ...genres.map((el) => el.name),
-          ...Object.values(origins),
-        ],
-        extra: [
-          {
-            name: "genre",
-            options: [
-              ...Object.values(categories),
-              ...genres.map((el) => el.name),
-              ...Object.values(origins),
-            ],
-          },
-          { name: "skip" },
-        ],
-        extraSupported: ["genre", "skip"],
-        name: provider.provider_name,
-      });
-
-      manifest.catalogs.push({
-        type: "series",
-        id: `${config.prefix}&id=${provider.provider_id}`,
-        genres: [
-          ...Object.values(categories),
-          ...genres.map((el) => el.name),
-          ...Object.values(origins),
-        ],
-        extra: [
-          {
-            name: "genre",
-            options: [
-              ...Object.values(categories),
-              ...genres.map((el) => el.name),
-              ...Object.values(origins),
-            ],
-          },
-          { name: "skip" },
-        ],
-        extraSupported: ["genre", "skip"],
-        name: provider.provider_name,
-      });
-    });
+    // manifest.catalogs.push({
+    //   type: "movie",
+    //   id: `${config.prefix}&id=new`,
+    //   genres: [...years],
+    //   extra: [
+    //     {
+    //       name: "genre",
+    //       options: [...years],
+    //     },
+    //     { name: "skip" },
+    //   ],
+    //   extraSupported: ["genre", "skip"],
+    //   name: "New",
+    // });
 
     var json = { ...manifest };
     return res.send(json);
   }
 
   /**
-   *  Handle Catalog
+   *  Handle Metadata
    * @param {import("express").Request} req
    * @param {import("express").Response} res
    * @returns
    */
-  static async handleCatalog(req, res) {
+  static async handleMeta(req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Headers", "*");
+    res.setHeader("Content-Type", "application/json");
+
+    let { type, id, skip, genre } = parseRequest(req);
+
+    id = (id ?? "").replace(config.prefix, "");
+    let show = {};
+    let imdb = {};
+    try {
+      show = await findCollection(id);
+    } catch (error) {
+      return Promise.resolve({ metas: [] });
+    }
+
+    return await new Promise(async (resolve, reject) => {
+      let meta = {
+        name: show?.name,
+        description: show?.overview,
+        id: config.prefix + id?.toString(),
+        type: "movie",
+        imdbRating:
+          show && "parts" in show
+            ? show?.parts?.reduce((cumul, currentValue) => {
+                cumul = cumul + currentValue?.vote_average;
+                return cumul;
+              }, 0) / show?.parts?.length
+            : 5,
+        released:
+          show && "parts" in show && show?.parts?.length > 0
+            ? `${show?.parts?.pop()?.release_date}T05:00:00.000Z`
+            : new Date().toISOString(),
+        // genres: show?.genres?.map((el) => el?.name),
+        poster: config.cdn_path + show?.poster_path,
+        background: config.cdn_path + show?.backdrop_path,
+      };
+
+      if (show?.parts) {
+        meta.videos = await Promise.all(
+          show?.parts.map(async (movie, index) => {
+            const imdbIdJson = await externalSourceMovie(movie?.id);
+
+            let title = `${movie?.title}`;
+            let id = imdbIdJson ? `${imdbIdJson["imdb_id"]}` : "";
+
+            let t = {
+              id,
+              title,
+              overview: movie?.overview,
+              type: "movie",
+              released:
+                `${movie?.release_date ?? new Date().toISOString()}`.substring(
+                  0,
+                  10
+                ) + "T05:00:00.000Z",
+              thumbnail: config.cdn_path + movie?.backdrop_path,
+            };
+
+            return t;
+          })
+        );
+
+        meta.videos = (meta.videos ?? []).flat();
+      }
+
+      return res.send({ meta });
+    });
+  }
+
+  static async handleCollection(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Headers", "*");
     res.setHeader("Content-Type", "application/json");
@@ -217,146 +178,55 @@ class CatalogAddon {
     console.log({ type, id, skip, extra });
 
     let genre = null;
-    let year = null;
     let category = null;
-    let origin = null;
     let catalog = [];
     let genresValues = genres.map((el) => el.name);
 
-    let providerId = id.split("&id=").pop();
-    // console.log({ providerId });
-    let provider = providers.find((el) => el.provider_id == providerId);
+    let categoryId = id.split("&id=").pop();
+    category = Object.keys(categories).includes(categoryId)
+      ? categories[categoryId]
+      : "Trending";
 
     if (extra) {
-      if (Object.values(categories).includes(extra)) {
-        const index = Object.values(categories).findIndex((el) => el == extra);
-        category = index != -1 ? Object.keys(categories).at(index) : "trending";
-      } else if (Object.values(origins).includes(extra)) {
-        const index = Object.values(origins).findIndex((el) => el == extra);
-        origin = index != -1 ? Object.keys(origins).at(index) : null;
-      } else if (genresValues.includes(extra)) {
+      if (genresValues.includes(extra)) {
         genre = genres.find((el) => el.name == extra);
-      } else if (years.includes(extra)) {
-        year = extra;
       }
     }
 
     try {
-      let _skip = Math.floor((skip ?? 0) / 20) + 1;
+      let _skip = Math.floor((skip ?? 0) / 18) + 1;
       console.log({ page: _skip });
 
       if (search) {
         console.log(`Searching and looking for...${search}`);
-        switch (type) {
-          case "series":
-            catalog = await searchTVShows(_skip, search);
-            break;
-          case "movie":
-            catalog = await searchMovies(_skip, search);
-            break;
-
-          default:
-            break;
-        }
+        catalog = await searchMovies(_skip, search);
       } else {
-        if (!provider && !category && !origin) {
-          console.log({ providerId });
+        console.log({ categoryId, category, genre });
 
-          if (["onair", "new"].includes(providerId)) {
-            category = providerId;
-          } else if (providerId == "top") {
-            if (!!genre) {
-              category = "trending+genre";
-            } else {
-              category = "trending";
-            }
-          } else {
-            category = "trending";
-          }
-        }
+        //newly_added, popularity for category
 
-        console.log({ category, genre, origin, provider });
-
-        if (category && !provider) {
-          switch (category) {
-            case "trending":
-              catalog =
-                type == "movie"
-                  ? await trendingMovies()
-                  : await trendingTVShows();
-              break;
-
-            case "onair":
-              catalog =
-                type == "movie"
-                  ? await sortedMovies(
-                      "popularity",
-                      _skip,
-                      extra && genre ? genre.id : null,
-                      null
-                    )
-                  : await onAirTVShows(
-                      null,
-                      "US",
-                      _skip,
-                      extra && genre ? genre.id : null,
-                      origin,
-                      category
-                    );
-              break;
-            case "trending+genre":
-            case "new":
-            default:
-              catalog =
-                type == "movie"
-                  ? await sortedMovies(
-                      category,
-                      _skip,
-                      extra && genre ? genre.id : null,
-                      year
-                    )
-                  : await sortedTV(
-                      category,
-                      _skip,
-                      extra && genre ? genre.id : null,
-                      year
-                    );
-              break;
-          }
-        } else {
-          if (type == "movie") {
-            catalog = await discoverMovies(
-              provider?.provider_id,
-              provider?.region ?? "US",
+        switch (categoryId) {
+          case "top":
+            catalog = await sortedMovies(
+              categoryId,
               _skip,
-              extra && genre ? genre?.id : null,
-              extra ? origin : null,
-              category
+              genre ? genre.id : null,
+              undefined
             );
-          } else {
-            try {
-              catalog =
-                category == "onair"
-                  ? await onAirTVShows(
-                      provider?.provider_id,
-                      provider?.region ?? "US",
-                      _skip,
-                      extra && genre ? genre.id : null,
-                      extra ? origin : null,
-                      category
-                    )
-                  : await discoverTVShows(
-                      provider?.provider_id,
-                      provider?.region ?? "US",
-                      _skip,
-                      extra && genre ? genre?.id : null,
-                      extra ? origin : null,
-                      category
-                    );
-            } catch (error) {
-              console.log({ error });
-            }
-          }
+            break;
+          case "popularity":
+          // case "new":
+          case "newly_added":
+            catalog = await sortedMovies(
+              categoryId,
+              _skip,
+              extra && genre ? genre.id : null
+            );
+            break;
+          case "new":
+          default:
+            catalog = await trendingMovies();
+            break;
         }
       }
     } catch (error) {
@@ -374,160 +244,34 @@ class CatalogAddon {
       }
     }
 
+    let collection = await getCollectionsFromMovies(catalog);
+
+    console.log(collection.total_results);
+
+    let t = [
+      ...collection?.results.map((one) => {
+        return {
+          name: one?.name,
+          id: config.prefix + one?.id,
+          type: "movie",
+          imdbRating: 7,
+          poster: config.cdn_path + one?.poster_path,
+          background: config.cdn_path + one?.backdrop_path,
+        };
+      }),
+    ];
+
     return res.send({
-      metas: [
-        ...catalog.map((one) => {
-          return {
-            name: type == "series" ? one?.name : one?.title,
-            id:
-              type == "series"
-                ? config.prefix + one?.id
-                : "imdb_id" in one && !!one?.imdb_id
-                ? one?.imdb_id
-                : config.prefix + one?.id,
-            description: one?.overview,
-            type: type,
-            imdbRating: one?.vote_average,
-            releaseInfo:
-              type == "series"
-                ? `${one?.first_air_date}`.substring(0, 4)
-                : `${one?.release_date}`.substring(0, 4),
-            poster: config.cdn_path + one?.poster_path,
-            background: config.cdn_path + one?.backdrop_path,
-          };
-        }),
-      ],
+      metas: t,
     });
   }
 
-  /**
-   *  Handle Metadata
-   * @param {import("express").Request} req
-   * @param {import("express").Response} res
-   * @returns
-   */
-  static async handleMeta(req, res) {
+  static async handleStream(req, res) {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Headers", "*");
     res.setHeader("Content-Type", "application/json");
-
-    let { type, id, skip, genre } = parseRequest(req);
-
-    if (type == "movie" && id.includes("tt")) {
-      try {
-        let req = await fetch(
-          `https://cinemeta-live.strem.io/meta/movie/${id}.json`
-        );
-        if (req.ok) {
-          let json = await req.json();
-          return res.json(json);
-        }
-      } catch (error) {
-        console.log({ error });
-        return res.json({
-          meta: {
-            id: id,
-            type: type,
-          },
-        });
-      }
-    }
-
-    id = (id ?? "").replace(config.prefix, "");
-    let show = {};
-    let imdb = {};
-    let cast = [];
-    try {
-      if (type == "series") {
-        show = await findShow(id);
-        show =
-          "overview" in show && show["overview"] != ""
-            ? show
-            : await findShow(id, "en-US");
-
-        imdb = await externalSourceShow(id);
-      } else if ((type = "movie")) {
-        show = await findMovie(id);
-        imdb = await externalSourceMovie(id);
-      }
-      cast = await getCastTeam(id, type == "series" ? "tv" : "movie");
-    } catch (error) {
-      return Promise.resolve({ metas: [] });
-    }
-
-    cast = cast.length < 4 ? cast : cast.slice(0, 4);
-
-    return await new Promise(async (resolve, reject) => {
-      let meta = {
-        name: type == "series" ? show?.name : show?.title,
-        description: show?.overview,
-        id:
-          type == "series"
-            ? config.prefix + id?.toString()
-            : show?.imdb_id ??
-              (imdb && "imdb_id" in imdb ? imdb["imdb_id"] : ""),
-        type: type,
-        imdbRating: show?.vote_average,
-        released:
-          type == "movie"
-            ? show?.release_date
-              ? `${show?.release_date}T05:00:00.000Z`
-              : new Date().toISOString()
-            : show?.first_air_date
-            ? `${show?.first_air_date}T05:00:00.000Z`
-            : new Date().toISOString(),
-        genres: show?.genres?.map((el) => el?.name),
-        poster: config.cdn_path + show?.poster_path,
-        background: config.cdn_path + show?.backdrop_path,
-        cast,
-      };
-
-      if (type == "series" && show?.seasons) {
-        meta.videos = await Promise.all(
-          show?.seasons.map(async (saison) => {
-            let arr = [];
-            const seasonDetail = await getSeason(id, saison?.season_number);
-            if (!seasonDetail) return arr;
-            if (!("episodes" in seasonDetail)) return arr;
-            return await new Promise((resolve, reject) => {
-              for (let el of seasonDetail["episodes"]) {
-                let title = `${el?.name}`;
-                let id = imdb
-                  ? `${imdb["imdb_id"]}:${parseInt(saison?.season_number)}:${
-                      parseInt(el?.episode_number) ?? 0
-                    }`
-                  : "";
-
-                arr.push({
-                  id,
-                  title,
-                  overview: el?.overview,
-                  season: saison?.season_number,
-                  episode: parseInt(el?.episode_number) ?? 0,
-                  released:
-                    `${el?.air_date ?? new Date().toISOString()}`.substring(
-                      0,
-                      10
-                    ) + "T05:00:00.000Z",
-                  thumbnail: config.cdn_path + el?.still_path,
-                });
-              }
-              resolve(arr);
-            });
-          })
-        );
-
-        meta.videos = (meta.videos ?? []).reduce(
-          (currentArray, currentValue) => {
-            currentArray = currentArray.concat(currentValue);
-            return currentArray;
-          },
-          []
-        );
-      }
-
-      return res.send({ meta });
-    });
+    const { type, id, genre: extra } = parseRequest(req);
+    console.log({ type, id, extra });
   }
 }
 

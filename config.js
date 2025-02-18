@@ -1,10 +1,10 @@
 const config = {
-  id: "strm.daiki.tmdb_ctlg",
-  prefix: "tmdb",
+  id: "strm.daiki.tmdb_cctlg",
+  prefix: "ctmdbl",
   // prefix: "tmdb_ctlg.addon",
-  version: "1.0.3",
-  name: "Catalog Vercel",
-  description: "From Catalog Vercel",
+  version: "1.0.0",
+  name: "Collection Catalog Vercel",
+  description: "From Catalog Vercel for Collections",
   // logo: "https://miro.medium.com/v2/resize:fit:720/format:webp/1*idLhmtcMdWeN-UMGR0ROjQ.png",
   logo: "https://pbs.twimg.com/profile_images/1243623122089041920/gVZIvphd_400x400.jpg",
   cdn_path: "https://image.tmdb.org/t/p/original",
@@ -23,11 +23,17 @@ const manifest = {
     "addon_catalog",
     {
       name: "meta",
-      types: ["series", "movie"],
+      types: ["movie", "collection", "series"],
+      idPrefixes: ["tt", config.prefix],
+    },
+
+    {
+      name: "stream",
+      types: ["movie", "collection", "series"],
       idPrefixes: ["tt", config.prefix],
     },
   ],
-  types: ["movie", "series"],
+  types: ["movie", "series", "collection"],
 
   behaviorHints: {
     newEpisodeNotifications: true,

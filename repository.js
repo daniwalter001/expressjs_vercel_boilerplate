@@ -1,8 +1,8 @@
 const { config } = require("./config");
 const fetch = require("node-fetch");
 
-const vote_average = 6
-const vote_count = 10
+const vote_average = 6;
+const vote_count = 10;
 
 const getProviders = () => {
   const url =
@@ -206,7 +206,7 @@ const discoverTVShows = (
   let start = `${new Date().getFullYear() - 2}-01-01`;
 
   let url =
-    `https://api.themoviedb.org/3/discover/tv?include_adult=false&include_null_first_air_dates=false&language=fr-FR&vote_average.gte=${vote_average}&vote_count.gte=${vote_count}&first_air_date.lte=${today}` +
+    `https://api.themoviedb.org/3/discover/tv?include_adult=false&include_null_first_air_dates=false&language=fr-FR&vote_average.gte=${vote_average}&vote_count.gte=${vote_count}&first_air_date.lte=${today}&with_keywords=9663` +
     (providerID
       ? `&with_watch_providers=${providerID}&watch_region=${region}`
       : "") +
@@ -267,7 +267,8 @@ const onAirTVShows = (
     (genre ? `&with_genres=${genre}` : "") +
     (origin ? `&with_origin_country=${origin}` : "") +
     (["newly_added", "popularity"].includes(category) ||
-    (category == null || genre == null)
+    category == null ||
+    genre == null
       ? `&without_genres=10764|10766|10767`
       : "");
 
@@ -293,10 +294,10 @@ const onAirTVShows = (
 const discoverMovies = (
   providerID,
   region = "US",
-  page,
+  page = 1,
   genre,
   origin,
-  category
+  category = "popularity"
 ) => {
   let start = `${new Date().getFullYear() - 2}-01-01`;
   let today = new Date().toISOString().split("T")[0];
@@ -316,6 +317,8 @@ const discoverMovies = (
     (category == null && genre == null)
       ? `&without_genres=10764|10766|10767`
       : "");
+
+  console.log({ url });
 
   const options = {
     method: "GET",
@@ -383,18 +386,18 @@ const sortedMovies = (category = "popularity", page, genre = "", year = "") => {
   const end = `${year}-12-31`;
   const today = new Date().toISOString().split("T")[0];
 
-  let url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=popularity.desc&vote_count.gte=${vote_count}&vote_average.gte=${vote_average}`;
+  let url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=popularity.desc&vote_count.gte=${vote_count}&vote_average.gte=${vote_average}&with_keywords=9663`;
 
   switch (category) {
     case "top_rated":
-      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=vote_average.desc&without_genres=10755&vote_count.gte=${vote_count}&vote_average.gte=${vote_average}`;
+      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=vote_average.desc&without_genres=10755&vote_count.gte=${vote_count}&vote_average.gte=${vote_average}&with_keywords=9663`;
       break;
     case "popularity":
-      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=vote_average.desc&without_genres=10755&vote_count.gte=200&vote_average.gte=${vote_average}`;
+      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=vote_average.desc&without_genres=10755&vote_count.gte=200&vote_average.gte=${vote_average}&with_keywords=9663`;
       break;
     case "newly_added":
     case "new":
-      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=primary_release_date.desc&vote_average.gte=${vote_average}&vote_count.gte=${vote_count}`;
+      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=primary_release_date.desc&vote_average.gte=${vote_average}&vote_count.gte=${vote_count}&with_keywords=9663`;
       break;
     default:
       break;
@@ -410,8 +413,6 @@ const sortedMovies = (category = "popularity", page, genre = "", year = "") => {
     (["newly_added", "popularity"].includes(category) || category == null
       ? `&without_genres=10764|10766|10767`
       : "");
-
-  console.log({ url });
 
   const options = {
     method: "GET",
@@ -558,10 +559,57 @@ const getCastTeam = (id = 1, type = "tv") => {
     });
 };
 
+const getCollectionsFromMovies = async (movies = []) => {
+  // First get movies from discover
+
+  // Then fetch full details for each movie to get collection info
+  const moviesWithDetails = await Promise.all(
+    movies.map(async (movie) => {
+      const details = await findMovie(movie.id);
+      return {
+        ...movie,
+        collection: details?.belongs_to_collection || null,
+      };
+    })
+  );
+
+  let moviesInCollections = moviesWithDetails.map((movie) => movie.collection);
+  moviesInCollections = moviesInCollections.filter(
+    (collection) => collection !== null
+  );
+
+  return {
+    results: moviesInCollections,
+    total_results: moviesInCollections.length,
+  };
+};
+
+let findCollection = async (id = "") => {
+  let url = `https://api.themoviedb.org/3/collection/${id}?language=fr-FR`;
+
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "id" in json ? json : false;
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return false;
+    });
+};
+
 // (async () => {
 //   require("fs").writeFileSync(
-//     "./assets/providers.bak.json",
-//     JSON.stringify(await getProviders())
+//     "./assets/collections.bak.json",
+//     JSON.stringify(await getDiscoverMoviesWithCollections(), null, 2)
 //   );
 // })();
 
@@ -589,4 +637,6 @@ module.exports = {
   searchMovies,
   getCastTeam,
   onAirTVShows,
+  getCollectionsFromMovies,
+  findCollection,
 };
