@@ -73,21 +73,6 @@ class CatalogAddon {
       extraSupported: ["genre", "skip"],
     });
 
-    //new
-    // manifest.catalogs.push({
-    //   type: "movie",
-    //   id: `${config.prefix}&id=new`,
-    //   genres: [...years],
-    //   extra: [
-    //     {
-    //       name: "genre",
-    //       options: [...years],
-    //     },
-    //     { name: "skip" },
-    //   ],
-    //   extraSupported: ["genre", "skip"],
-    //   name: "New",
-    // });
 
     var json = { ...manifest };
     return res.send(json);
@@ -141,8 +126,6 @@ class CatalogAddon {
         poster: config.cdn_path + show?.poster_path,
         background: config.cdn_path + show?.backdrop_path,
       };
-
-      // console.log(meta);
 
       if (show?.parts) {
         meta.videos = await Promise.all(
@@ -205,7 +188,7 @@ class CatalogAddon {
     }
 
     try {
-      let _skip = Math.floor((skip ?? 0) / 18) + 1;
+      let _skip = Math.floor((skip ?? 0) / 19) + 1;
       console.log({ page: _skip });
 
       if (search) {
