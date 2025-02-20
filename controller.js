@@ -2,9 +2,7 @@ const { genres } = require("./assets/genres");
 const { manifest, config } = require("./config");
 const { parseRequest } = require("./helpers");
 const {
-  searchMovies,
   sortedMovies,
-  trendingMovies,
   externalSourceMovie,
   getCollectionsFromMovies,
   findCollection,
@@ -91,94 +89,8 @@ class CatalogAddon {
       extraSupported: ["genre", "skip"],
     });
 
-
     var json = { ...manifest };
     return res.send(json);
-  }
-
-  /**
-   *  Handle Metadata
-   * @param {import("express").Request} req
-   * @param {import("express").Response} res
-   * @returns
-   */
-  static async handleMeta(req, res) {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Headers", "*");
-    res.setHeader("Content-Type", "application/json");
-
-    let { type, id, skip, genre } = parseRequest(req);
-
-    id = (id ?? "").replace(config.prefix, "");
-    let show = {};
-    let imdb = {};
-    try {
-      show = await findCollection(id);
-    } catch (error) {
-      return Promise.resolve({ metas: [] });
-    }
-
-    return await new Promise(async (resolve, reject) => {
-      let meta = {
-        name: show?.name,
-        description: show?.overview,
-        id: config.prefix + id?.toString(),
-        type: "movie",
-        imdbRating:
-          show && "parts" in show
-            ? show?.parts
-                ?.filter((el) => !!el && el?.id && !!el?.release_date)
-                ?.reduce((cumul, currentValue) => {
-                  cumul = cumul + (currentValue?.vote_average || 0);
-                  return cumul;
-                }, 0) / show?.parts?.length
-            : 5,
-        released:
-          show && "parts" in show && show?.parts?.length > 0
-            ? `${
-                show?.parts.find((el) => !!el?.id && !!el?.release_date)
-                  ?.release_date
-              }T05:00:00.000Z`
-            : new Date().toISOString(),
-        // genres: show?.genres?.map((el) => el?.name),
-        poster: config.cdn_path + show?.poster_path,
-        background: config.cdn_path + show?.backdrop_path,
-      };
-
-      if (show?.parts) {
-        meta.videos = await Promise.all(
-          show?.parts
-            ?.filter((el) => {
-              console.log(el.id);
-              return !!el && el?.id && !!el?.release_date;
-            })
-            .map(async (movie, index) => {
-              const imdbIdJson = await externalSourceMovie(movie?.id);
-
-              let title = `${movie?.title}`;
-              let id = imdbIdJson ? `${imdbIdJson["imdb_id"]}` : "";
-
-              let t = {
-                id,
-                title,
-                overview: movie?.overview,
-                type: "movie",
-                released:
-                  `${
-                    movie?.release_date ?? new Date().toISOString()
-                  }`.substring(0, 10) + "T05:00:00.000Z",
-                thumbnail: config.cdn_path + movie?.backdrop_path,
-              };
-
-              return t;
-            })
-        );
-
-        meta.videos = (meta.videos ?? []).flat();
-      }
-
-      return res.send({ meta });
-    });
   }
 
   static async handleCollection(req, res) {
@@ -253,6 +165,106 @@ class CatalogAddon {
 
     return res.send({
       metas: t,
+    });
+  }
+
+  /**
+   *  Handle Metadata
+   * @param {import("express").Request} req
+   * @param {import("express").Response} res
+   * @returns
+   */
+  static async handleMeta(req, res) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Headers", "*");
+    res.setHeader("Content-Type", "application/json");
+
+    let { type, id, skip, genre } = parseRequest(req);
+
+    id = (id ?? "").replace(config.prefix, "");
+    let show = {};
+    try {
+      show = await findCollection(id);
+    } catch (error) {
+      return Promise.resolve({ metas: [] });
+    }
+
+    return await new Promise(async (resolve, reject) => {
+      let imdbRating =
+        show && "parts" in show
+          ? show?.parts
+              ?.filter((el) => !!el && el?.id && !!el?.release_date)
+              ?.reduce((cumul, currentValue) => {
+                cumul = cumul + (currentValue?.vote_average || 0);
+                return cumul;
+              }, 0) / show?.parts?.length
+          : 5;
+
+      imdbRating = imdbRating.toFixed(1);
+
+      let released =
+        show && "parts" in show && show?.parts?.length > 0
+          ? `${
+              show?.parts
+                .find((el) => !!el?.id && !!el?.release_date)
+                ?.release_date?.slice(0, 4) || new Date().getFullYear()
+            }-${
+              show?.parts
+                .filter((el) => !!el?.id && !!el?.release_date)
+                .pop()
+                ?.release_date?.slice(0, 4) || new Date().getFullYear()
+            }`
+          : `${new Date().getFullYear()}-${new Date().getFullYear()}`;
+
+      // console.log({ released });
+      // console.log({ imdbRating });
+
+      let meta = {
+        name: show?.name,
+        description: show?.overview,
+        id: config.prefix + id?.toString(),
+        type: "movie",
+        imdbRating,
+        releaseInfo: released,
+        poster: config.cdn_path + show?.poster_path,
+        background: config.cdn_path + show?.backdrop_path,
+        // genres: show?.genres?.map((el) => el?.name),
+      };
+
+      if (show?.parts) {
+        meta.videos = await Promise.all(
+          show?.parts
+            ?.filter((el) => {
+              return !!el && el?.id && !!el?.release_date;
+            })
+            .map(async (movie) => {
+              const imdbIdJson = await externalSourceMovie(movie?.id);
+
+              let title = `${movie?.title}`;
+              let id = imdbIdJson ? `${imdbIdJson["imdb_id"]}` : "";
+              let release_date =
+                `${movie?.release_date ?? new Date().toISOString()}`.substring(
+                  0,
+                  10
+                ) + "T05:00:00.000Z";
+
+              console.log({ release_date });
+
+              return {
+                id,
+                title,
+                overview: movie?.overview,
+                type: "movie",
+                released: release_date,
+                thumbnail: config.cdn_path + movie?.backdrop_path,
+              };
+            })
+        );
+
+        meta.videos = (meta.videos ?? []).flat();
+      }
+
+      return res.send({ meta });
     });
   }
 
