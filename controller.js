@@ -9,9 +9,9 @@ const {
   searchCollection,
 } = require("./repository");
 const { categories } = require("./utils");
-const JsonDatabase = require("./db/index");
+// const JsonDatabase = require("./db/index");
 
-const db = new JsonDatabase();
+// const db = new JsonDatabase();
 
 class CatalogAddon {
   /**
@@ -121,16 +121,16 @@ class CatalogAddon {
       }
     }
 
-    let pId = `${categoryId}-${genre ? genre?.id : "default"}-${skip || 0}`;
-    let potentialPage = await db.findById(pId);
+    // let pId = `${categoryId}-${genre ? genre?.id : "default"}-${skip || 0}`;
+    // let potentialPage = await db.findById(pId);
     try {
       // console.log({ potentialPage });
-      if (potentialPage) {
-        _skip = potentialPage?.next;
-      } else {
-        _skip = Math.floor((skip ?? 0) / 13) + 1;
-      }
+      // if (potentialPage) {
+      //   _skip = potentialPage?.next;
+      // }
       console.log({ page: _skip });
+
+      _skip = Math.floor(_skip / 16) + 1;
 
       if (search) {
         console.log(`Searching and looking for...${search}`);
@@ -160,50 +160,55 @@ class CatalogAddon {
 
     let collection = search ? catalog : await getCollectionsFromMovies(catalog);
 
-    if (collection.results.length === 0) {
-      collection.results = [
-        {
-          name: "Dummy Catalog",
-          id: config.prefix + "1122",
-          type: "movie",
-          poster: config.cdn_path + "",
-          background: config.cdn_path + "",
-        },
-      ];
-    }
+    // if (collection.results.length === 0) {
+    //   collection.results = [
+    //     {
+    //       name: "Dummy Catalog",
+    //       id: config.prefix + "1122",
+    //       type: "movie",
+    //       poster: config.cdn_path + "",
+    //       background: config.cdn_path + "",
+    //     },
+    //   ];
+    // }
 
-    if (!search) {
-      let savedNPage = false;
+    console.log({ Collection: collection.results.length });
+    // console.log({ Collection: collection.results.map((el) => el.name) });
 
-      if (collection.results.length === 0) {
-        _skip = (+_skip || 0) + 1;
-        console.log("Skipping page to " + _skip.toString());
-      }
+    // if (!search) {
+    //   let savedNPage = false;
 
-      if (!potentialPage) {
-        savedNPage = await db.create({
-          id: pId,
-          next: _skip,
-        });
-        console.log({ savedPage: savedNPage });
-      } else {
-        savedNPage = await db.update(pId, {
-          next: _skip,
-        });
-      }
+    //   if (collection.results.length === 0) {
+    //     _skip = (+_skip || 0) + 1;
+    //     console.log("Skipping page to " + _skip.toString());
+    //   }
 
-      if (collection.results.length !== 0) {
-        let nId = `${categoryId}-${genre ? genre?.id : "default"}-${
-          (+skip || 0) + collection.results.length
-        }`;
+    //   if (!potentialPage) {
+    //     savedNPage = await db.create({
+    //       id: pId,
+    //       next: _skip,
+    //     });
+    //     console.log({ savedPage: savedNPage });
+    //   } else {
+    //     // if (collection.results.length === 0) {
+    //     //   savedNPage = await db.update(pId, {
+    //     //     next: _skip,
+    //     //   });
+    //     // }
+    //   }
 
-        savedNPage = await db.create({
-          id: nId,
-          next: _skip + 1,
-        });
-        console.log({ savedNPage });
-      }
-    }
+    //   if (collection.results.length !== 0) {
+    //     let nId = `${categoryId}-${genre ? genre?.id : "default"}-${
+    //       (+skip || 0) + collection.results.length
+    //     }`;
+
+    //     savedNPage = await db.create({
+    //       id: nId,
+    //       next: _skip + 1,
+    //     });
+    //     console.log({ savedNPage });
+    //   }
+    // }
 
     let t = [
       ...collection?.results.map((one) => {
