@@ -146,10 +146,10 @@ class CatalogAddon {
           extra && genre ? genre.id : null
         );
 
-        console.log({
-          total_pages: r?.total_pages,
-          total_results: r?.total_results,
-        });
+        // console.log({
+        //   total_pages: r?.total_pages,
+        //   total_results: r?.total_results,
+        // });
 
         catalog = r && "results" in r ? r.results : [];
       }
@@ -163,24 +163,34 @@ class CatalogAddon {
     if (!search) {
       let savedNPage = false;
 
+      if (collection.results.length === 0) {
+        console.log("Skipping page to " + _skip.toString());
+        _skip = (+_skip || 0) + 1;
+      }
+
       if (!potentialPage) {
         savedNPage = await db.create({
           id: pId,
           next: _skip,
         });
         console.log({ savedPage: savedNPage });
+      } else {
+        savedNPage = await db.update(pId, {
+          next: _skip,
+        });
       }
 
-      let nId = `${categoryId}-${genre ? genre?.id : "default"}-${
-        (+skip || 0) + collection.results.length
-      }`;
+      if (collection.results.length !== 0) {
+        let nId = `${categoryId}-${genre ? genre?.id : "default"}-${
+          (+skip || 0) + collection.results.length
+        }`;
 
-      savedNPage = await db.create({
-        id: nId,
-        next: _skip + 1,
-      });
-
-      console.log({ savedNPage });
+        savedNPage = await db.create({
+          id: nId,
+          next: _skip + 1,
+        });
+        console.log({ savedNPage });
+      }
     }
 
     let t = [
