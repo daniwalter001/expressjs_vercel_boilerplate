@@ -164,8 +164,8 @@ class CatalogAddon {
       let savedNPage = false;
 
       if (collection.results.length === 0) {
-        console.log("Skipping page to " + _skip.toString());
         _skip = (+_skip || 0) + 1;
+        console.log("Skipping page to " + _skip.toString());
       }
 
       if (!potentialPage) {
