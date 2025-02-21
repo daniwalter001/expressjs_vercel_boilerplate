@@ -128,9 +128,10 @@ class CatalogAddon {
       // if (potentialPage) {
       //   _skip = potentialPage?.next;
       // }
-      console.log({ page: _skip });
 
-      _skip = Math.floor(_skip / 16) + 1;
+      _skip = Math.floor(skip / 16) + 1;
+
+      console.log({ page: _skip });
 
       if (search) {
         console.log(`Searching and looking for...${search}`);
