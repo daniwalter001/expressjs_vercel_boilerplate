@@ -318,7 +318,7 @@ const discoverMovies = (
       ? `&without_genres=10764|10766|10767`
       : "");
 
-  console.log({ url });
+  // console.log({ url });
 
   const options = {
     method: "GET",

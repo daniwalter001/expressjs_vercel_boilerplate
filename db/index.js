@@ -1,56 +1,46 @@
-const fs = require("fs");
-const path = require("path");
+const Redis = require("redis");
 
-class JsonDatabase {
+class RedisDatabase {
+  pass = process.env.REDIS_PASSWORD;
+  url = process.env.REDIS_URL;
+  port = process.env.REDIS_PORT;
+
   constructor() {
-    this.filepath = path.join(process.cwd(), this.DB);
-    this.initializeDb();
+    this.client = Redis.createClient({
+      url: `rediss://default:${this.pass}@${this.url}:${this.port}`,
+      socket: {
+        timeout: 10000,
+      },
+    });
+    this.client.connect();
+    this.client.ping();
   }
 
-  DB = "db.bin";
-
-  initializeDb() {
-    if (!fs.existsSync(this.filepath)) {
-      fs.writeFileSync(this.filepath, JSON.stringify([], null, 2));
-    }
+  async read() {
+    const data = await this.client.get("db");
+    return data ? JSON.parse(data) : [];
   }
 
-  //create file if not exists
-  createDBFile() {
-    if (!fs.existsSync(this.filepath)) {
-      fs.writeFileSync(this.filepath, JSON.stringify([], null, 2));
-    }
-  }
-
-  read() {
-    this.createDBFile();
-    const data = fs.readFileSync(this.filepath, "utf8");
-    return JSON.parse(data);
-  }
-
-  write(data) {
-    this.createDBFile();
-    fs.writeFileSync(this.filepath, JSON.stringify(data, null, 2));
+  async write(data) {
+    await this.client.set("db", JSON.stringify(data));
     return true;
   }
 
-  findAll() {
-    this.createDBFile();
+  async findAll() {
     return this.read();
   }
 
-  findById(id) {
-    this.createDBFile();
-    const data = this.read();
+  async findById(id) {
+    const data = await this.read();
     return data.find((item) => item.id === id);
   }
 
-  create(item) {
-    this.createDBFile();
-    const data = this.read();
+  async create(item) {
+    const data = await this.read();
     try {
       let tmp = data.find((el) => el.id === item.id);
-      if (tmp) {
+      console.log({ tmp });
+      if (tmp && !!tmp.next) {
         console.log("already exists");
         return true;
       } else {
@@ -60,12 +50,10 @@ class JsonDatabase {
     } catch (error) {
       return false;
     }
-    return false;
   }
 
-  update(id, newData) {
-    this.createDBFile();
-    const data = this.read();
+  async update(id, newData) {
+    const data = await this.read();
     const index = data.findIndex((item) => item.id === id);
     if (index !== -1) {
       data[index] = { ...data[index], ...newData };
@@ -74,12 +62,11 @@ class JsonDatabase {
     return false;
   }
 
-  delete(id) {
-    this.createDBFile();
-    const data = this.read();
+  async delete(id) {
+    const data = await this.read();
     const filtered = data.filter((item) => item.id !== id);
     return this.write(filtered);
   }
 }
 
-module.exports = JsonDatabase;
+module.exports = RedisDatabase;

@@ -122,9 +122,9 @@ class CatalogAddon {
     }
 
     let pId = `${categoryId}-${genre ? genre?.id : "default"}-${skip || 0}`;
-    let potentialPage = db.findById(pId);
+    let potentialPage = await db.findById(pId);
     try {
-      console.log({ potentialPage });
+      // console.log({ potentialPage });
       if (potentialPage) {
         _skip = potentialPage?.next;
       } else {
@@ -164,7 +164,7 @@ class CatalogAddon {
       let savedNPage = false;
 
       if (!potentialPage) {
-        savedNPage = db.create({
+        savedNPage = await db.create({
           id: pId,
           next: _skip,
         });
@@ -175,7 +175,7 @@ class CatalogAddon {
         (+skip || 0) + collection.results.length
       }`;
 
-      savedNPage = db.create({
+      savedNPage = await db.create({
         id: nId,
         next: _skip + 1,
       });
@@ -281,7 +281,7 @@ class CatalogAddon {
                   10
                 ) + "T05:00:00.000Z";
 
-              console.log({ release_date });
+              // console.log({ release_date });
 
               return {
                 id,
