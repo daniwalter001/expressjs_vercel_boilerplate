@@ -1,9 +1,9 @@
 const config = {
-  id: "strm.daiki.tmdb_cctlg",
-  prefix: "ctmdbl",
+  id: "strm.daiki.tmdb_cctlg2",
+  prefix: "ctmdbl2",
   // prefix: "tmdb_ctlg.addon",
   version: "1.0.0",
-  name: "Collection Catalog Vercel",
+  name: "Collection Catalog Vercel 2",
   description: "From Catalog Vercel for Collections",
   // logo: "https://miro.medium.com/v2/resize:fit:720/format:webp/1*idLhmtcMdWeN-UMGR0ROjQ.png",
   logo: "https://pbs.twimg.com/profile_images/1243623122089041920/gVZIvphd_400x400.jpg",

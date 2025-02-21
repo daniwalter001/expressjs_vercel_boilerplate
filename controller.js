@@ -9,6 +9,9 @@ const {
   searchCollection,
 } = require("./repository");
 const { categories } = require("./utils");
+const JsonDatabase = require("./db/index");
+
+const db = new JsonDatabase();
 
 class CatalogAddon {
   /**
@@ -118,8 +121,15 @@ class CatalogAddon {
       }
     }
 
+    let pId = `${categoryId}-${genre ? genre?.id : "default"}-${skip || 0}`;
+    let potentialPage = db.findById(pId);
     try {
-      _skip = Math.floor((skip ?? 0) / 13) + 1;
+      console.log({ potentialPage });
+      if (potentialPage) {
+        _skip = potentialPage?.next;
+      } else {
+        _skip = Math.floor((skip ?? 0) / 13) + 1;
+      }
       console.log({ page: _skip });
 
       if (search) {
@@ -150,6 +160,29 @@ class CatalogAddon {
 
     let collection = search ? catalog : await getCollectionsFromMovies(catalog);
 
+    if (!search) {
+      let savedNPage = false;
+
+      if (!potentialPage) {
+        savedNPage = db.create({
+          id: pId,
+          next: _skip,
+        });
+        console.log({ savedPage: savedNPage });
+      }
+
+      let nId = `${categoryId}-${genre ? genre?.id : "default"}-${
+        (+skip || 0) + collection.results.length
+      }`;
+
+      savedNPage = db.create({
+        id: nId,
+        next: _skip + 1,
+      });
+
+      console.log({ savedNPage });
+    }
+
     let t = [
       ...collection?.results.map((one) => {
         return {
@@ -179,7 +212,7 @@ class CatalogAddon {
     res.setHeader("Access-Control-Allow-Headers", "*");
     res.setHeader("Content-Type", "application/json");
 
-    let { type, id, skip, genre } = parseRequest(req);
+    let { id } = parseRequest(req);
 
     id = (id ?? "").replace(config.prefix, "");
     let show = {};
