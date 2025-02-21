@@ -160,6 +160,18 @@ class CatalogAddon {
 
     let collection = search ? catalog : await getCollectionsFromMovies(catalog);
 
+    if (collection.results.length === 0) {
+      collection.results = [
+        {
+          name: "Dummy Catalog",
+          id: config.prefix + "1122",
+          type: "movie",
+          poster: config.cdn_path + "",
+          background: config.cdn_path + "",
+        },
+      ];
+    }
+
     if (!search) {
       let savedNPage = false;
 
