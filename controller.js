@@ -129,7 +129,7 @@ class CatalogAddon {
       //   _skip = potentialPage?.next;
       // }
 
-      _skip = Math.floor(skip / 16) + 1;
+      _skip = Math.floor(skip / 14) + 1;
 
       console.log({ page: _skip });
 
