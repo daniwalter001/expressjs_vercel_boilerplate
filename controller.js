@@ -392,7 +392,7 @@ class CatalogAddon {
               type == "series"
                 ? `${one?.first_air_date}`.substring(0, 4)
                 : `${one?.release_date}`.substring(0, 4),
-            poster: config.cdn_path + one?.poster_path,
+            poster: "https://image.tmdb.org/t/p/w780" + one?.poster_path,
             background: config.cdn_path + one?.backdrop_path,
           };
         }),
@@ -477,7 +477,7 @@ class CatalogAddon {
             ? `${show?.first_air_date}T05:00:00.000Z`
             : new Date().toISOString(),
         genres: show?.genres?.map((el) => el?.name),
-        poster: config.cdn_path + show?.poster_path,
+        poster: "https://image.tmdb.org/t/p/w780" + show?.poster_path,
         background: config.cdn_path + show?.backdrop_path,
         cast,
       };
