@@ -388,7 +388,7 @@ const sortedMovies = (category = "popularity", page, genre = "", year = "") => {
 
   let url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=popularity.desc&vote_count.gte=${vote_count}&vote_average.gte=${vote_average}&with_keywords=9675`;
 
-#9675,9663
+//9675,9663
 
   switch (category) {
     case "top_rated":
