@@ -386,20 +386,20 @@ const sortedMovies = (category = "popularity", page, genre = "", year = "") => {
   const end = `${year}-12-31`;
   const today = new Date().toISOString().split("T")[0];
 
-  let url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=popularity.desc&vote_count.gte=${vote_count}&vote_average.gte=${vote_average}&with_keywords=9675`;
+  let url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=popularity.desc&vote_count.gte=${vote_count}&vote_average.gte=${vote_average}&with_keywords=9675,9663`;
 
 //9675,9663
 
   switch (category) {
     case "top_rated":
-      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=vote_average.desc&without_genres=10755&vote_count.gte=${vote_count}&vote_average.gte=${vote_average}&with_keywords=9675`;
+      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=vote_average.desc&without_genres=10755&vote_count.gte=${vote_count}&vote_average.gte=${vote_average}&with_keywords=9675,9663`;
       break;
     case "popularity":
-      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=vote_average.desc&without_genres=10755&vote_count.gte=200&vote_average.gte=${vote_average}&with_keywords=9675`;
+      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=vote_average.desc&without_genres=10755&vote_count.gte=200&vote_average.gte=${vote_average}&with_keywords=9675,9663`;
       break;
     case "newly_added":
     case "new":
-      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=primary_release_date.desc&vote_average.gte=${vote_average}&vote_count.gte=${vote_count}&with_keywords=9675`;
+      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=primary_release_date.desc&vote_average.gte=${vote_average}&vote_count.gte=${vote_count}&with_keywords=9675,9663`;
       break;
     default:
       break;
