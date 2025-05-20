@@ -94,7 +94,7 @@ class CatalogAddon {
     }
 
     try {
-      _skip = Math.floor(skip / 14) + 1;
+      _skip = Math.floor(skip / 19) + 1;
 
       console.log({ page: _skip });
 
@@ -107,8 +107,7 @@ class CatalogAddon {
         //newly_added, popularity for category
 
         let r = await sortedPpl(
-          "top",
-          // categoryId || "top",
+          categoryId || "top",
           _skip,
           extra && genre ? genre.id : null
         );
