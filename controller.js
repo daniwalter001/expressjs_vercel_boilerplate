@@ -2,11 +2,14 @@ const { genres } = require("./assets/genres");
 const { manifest, config } = require("./config");
 const { parseRequest } = require("./helpers");
 const {
-  sortedMovies,
   externalSourceMovie,
   getCollectionsFromMovies,
   findCollection,
   searchCollection,
+  sortedPpl,
+  getPplDetail,
+  getPplMovies,
+  findMovie,
 } = require("./repository");
 const { categories } = require("./utils");
 // const JsonDatabase = require("./db/index");
@@ -30,15 +33,15 @@ class CatalogAddon {
 
     //Default
     manifest.catalogs.push({
-      name: "Collection Trending",
+      name: "Perso Trending",
       type: "movie",
       id: `${config.prefix}&id=top`,
-      genres: [...genres.map((el) => el.name)],
+      // genres: [...genres.map((el) => el.name)],
       extra: [
-        {
-          name: "genre",
-          options: [...genres.map((el) => el.name)],
-        },
+        // {
+        //   name: "genre",
+        //   options: [...genres.map((el) => el.name)],
+        // },
         { name: "skip" },
         { name: "search" },
       ],
@@ -47,46 +50,15 @@ class CatalogAddon {
 
     //popular
     manifest.catalogs.push({
-      name: "Collection Popular",
+      name: "Perso Popular",
       type: "movie",
       id: `${config.prefix}&id=popularity`,
-      genres: [...genres.map((el) => el.name)],
+      // genres: [...genres.map((el) => el.name)],
       extra: [
-        {
-          name: "genre",
-          options: [...genres.map((el) => el.name)],
-        },
-        { name: "skip" },
-      ],
-      extraSupported: ["genre", "skip"],
-    });
-
-    //top_rated
-    manifest.catalogs.push({
-      name: "Collection Top Rated",
-      type: "movie",
-      id: `${config.prefix}&id=top_rated`,
-      genres: [...genres.map((el) => el.name)],
-      extra: [
-        {
-          name: "genre",
-          options: [...genres.map((el) => el.name)],
-        },
-        { name: "skip" },
-      ],
-      extraSupported: ["genre", "skip"],
-    });
-
-    manifest.catalogs.push({
-      name: "Collection Newly Added",
-      type: "movie",
-      id: `${config.prefix}&id=newly_added`,
-      genres: [...genres.map((el) => el.name)],
-      extra: [
-        {
-          name: "genre",
-          options: [...genres.map((el) => el.name)],
-        },
+        // {
+        //   name: "genre",
+        //   options: [...genres.map((el) => el.name)],
+        // },
         { name: "skip" },
       ],
       extraSupported: ["genre", "skip"],
@@ -121,14 +93,7 @@ class CatalogAddon {
       }
     }
 
-    // let pId = `${categoryId}-${genre ? genre?.id : "default"}-${skip || 0}`;
-    // let potentialPage = await db.findById(pId);
     try {
-      // console.log({ potentialPage });
-      // if (potentialPage) {
-      //   _skip = potentialPage?.next;
-      // }
-
       _skip = Math.floor(skip / 14) + 1;
 
       console.log({ page: _skip });
@@ -141,16 +106,12 @@ class CatalogAddon {
 
         //newly_added, popularity for category
 
-        let r = await sortedMovies(
-          categoryId || "top",
+        let r = await sortedPpl(
+          "top",
+          // categoryId || "top",
           _skip,
           extra && genre ? genre.id : null
         );
-
-        // console.log({
-        //   total_pages: r?.total_pages,
-        //   total_results: r?.total_results,
-        // });
 
         catalog = r && "results" in r ? r.results : [];
       }
@@ -159,67 +120,21 @@ class CatalogAddon {
       return Promise.resolve({ metas: [] });
     }
 
-    let collection = search ? catalog : await getCollectionsFromMovies(catalog);
+    let collection = search ? [] : catalog;
+    // let collection = search ? catalog : await getCollectionsFromMovies(catalog);
 
-    // if (collection.results.length === 0) {
-    //   collection.results = [
-    //     {
-    //       name: "Dummy Catalog",
-    //       id: config.prefix + "1122",
-    //       type: "movie",
-    //       poster: config.cdn_path + "",
-    //       background: config.cdn_path + "",
-    //     },
-    //   ];
-    // }
-
-    console.log({ Collection: collection.results.length });
-    // console.log({ Collection: collection.results.map((el) => el.name) });
-
-    // if (!search) {
-    //   let savedNPage = false;
-
-    //   if (collection.results.length === 0) {
-    //     _skip = (+_skip || 0) + 1;
-    //     console.log("Skipping page to " + _skip.toString());
-    //   }
-
-    //   if (!potentialPage) {
-    //     savedNPage = await db.create({
-    //       id: pId,
-    //       next: _skip,
-    //     });
-    //     console.log({ savedPage: savedNPage });
-    //   } else {
-    //     // if (collection.results.length === 0) {
-    //     //   savedNPage = await db.update(pId, {
-    //     //     next: _skip,
-    //     //   });
-    //     // }
-    //   }
-
-    //   if (collection.results.length !== 0) {
-    //     let nId = `${categoryId}-${genre ? genre?.id : "default"}-${
-    //       (+skip || 0) + collection.results.length
-    //     }`;
-
-    //     savedNPage = await db.create({
-    //       id: nId,
-    //       next: _skip + 1,
-    //     });
-    //     console.log({ savedNPage });
-    //   }
-    // }
+    console.log({ Collection: collection.length });
 
     let t = [
-      ...collection?.results.map((one) => {
+      ...collection?.map((one) => {
         return {
           name: one?.name,
           id: config.prefix + one?.id,
           type: "movie",
-          // imdbRating: 5,
-          poster: config.cdn_path + one?.poster_path,
-          background: config.cdn_path + one?.backdrop_path,
+          poster: config.cdn_path + one?.profile_path,
+          background:
+            "https://dnm.nflximg.net/api/v6/2DuQlx0fM4wd1nzqm5BFBi6ILa8/AAAAQRC29H19twWKcTZ9Zpg4biJbGNaHF2GGIYNcLt4eZ6fvwugUJbuKxTjjMFPCS-y5P3ZePL57rupDtSkyUIJhv3P8leMJGMzszuG2CHNd65NwWPu5LeKxQkRNfNMHmxAwt7tmQZFk1VIrBd1aXr2AR5DM.jpg?r=5b1",
+          // background: config.cdn_path + one?.profile_path,
         };
       }),
     ];
@@ -244,33 +159,39 @@ class CatalogAddon {
 
     id = (id ?? "").replace(config.prefix, "");
     let show = {};
+    let ppl = {};
     try {
-      show = await findCollection(id);
+      show = await getPplMovies(id);
+      ppl = await getPplDetail(id);
     } catch (error) {
       return Promise.resolve({ metas: [] });
     }
 
     return await new Promise(async (resolve, reject) => {
-      let imdbRating =
-        show && "parts" in show
-          ? show?.parts
-              ?.filter((el) => !!el && el?.id && !!el?.release_date)
-              ?.reduce((cumul, currentValue) => {
-                cumul = cumul + (currentValue?.vote_average || 0);
-                return cumul;
-              }, 0) / show?.parts?.length
-          : 5;
+      let imdbRating = show
+        ? show
+            ?.filter((el) => !!el && el?.id && !!el?.release_date)
+            ?.reduce((cumul, currentValue) => {
+              cumul = cumul + (currentValue?.vote_average || 0);
+              return cumul;
+            }, 0) / show?.length
+        : 5;
 
       imdbRating = imdbRating.toFixed(1);
 
       let released =
-        show && "parts" in show && show?.parts?.length > 0
+        "birthday" in ppl
+          ? ppl?.birthday?.slice(0, 4) +
+            ("deathday" in ppl && ppl?.deathday
+              ? "-" + ppl?.deathday?.slice(0, 4)
+              : "")
+          : show && show?.length > 0
           ? `${
-              show?.parts
+              show
                 .find((el) => !!el?.id && !!el?.release_date)
                 ?.release_date?.slice(0, 4) || new Date().getFullYear()
             }-${
-              show?.parts
+              show
                 .filter((el) => !!el?.id && !!el?.release_date)
                 .pop()
                 ?.release_date?.slice(0, 4) || new Date().getFullYear()
@@ -281,25 +202,29 @@ class CatalogAddon {
       // console.log({ imdbRating });
 
       let meta = {
-        name: show?.name,
-        description: show?.overview,
+        name: ppl?.name,
+        description: ppl?.biography,
         id: config.prefix + id?.toString(),
         type: "movie",
         imdbRating,
         releaseInfo: released,
-        poster: config.cdn_path + show?.poster_path,
-        background: config.cdn_path + show?.backdrop_path,
+        poster: config.cdn_path + ppl?.profile_path,
+        background:
+          "https://dnm.nflximg.net/api/v6/2DuQlx0fM4wd1nzqm5BFBi6ILa8/AAAAQRC29H19twWKcTZ9Zpg4biJbGNaHF2GGIYNcLt4eZ6fvwugUJbuKxTjjMFPCS-y5P3ZePL57rupDtSkyUIJhv3P8leMJGMzszuG2CHNd65NwWPu5LeKxQkRNfNMHmxAwt7tmQZFk1VIrBd1aXr2AR5DM.jpg?r=5b1",
         // genres: show?.genres?.map((el) => el?.name),
       };
 
-      if (show?.parts) {
+      if (show) {
         meta.videos = await Promise.all(
-          show?.parts
+          show
             ?.filter((el) => {
               return !!el && el?.id && !!el?.release_date;
             })
             .map(async (movie) => {
               const imdbIdJson = await externalSourceMovie(movie?.id);
+              const movieData = await findMovie(movie?.id);
+
+              movie = movieData ? movieData : movie;
 
               let title = `${movie?.title}`;
               let id = imdbIdJson ? `${imdbIdJson["imdb_id"]}` : "";
@@ -309,15 +234,17 @@ class CatalogAddon {
                   10
                 ) + "T05:00:00.000Z";
 
-              // console.log({ release_date });
-
               return {
                 id,
                 title,
                 overview: movie?.overview,
                 type: "movie",
                 released: release_date,
-                thumbnail: config.cdn_path + movie?.backdrop_path,
+                thumbnail:
+                  config.cdn_path +
+                  ("backdrop_path" in movie && movie?.backdrop_path
+                    ? movie?.backdrop_path
+                    : movie?.poster_path),
               };
             })
         );

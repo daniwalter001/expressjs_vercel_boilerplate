@@ -381,40 +381,24 @@ const trendingMovies = () => {
     });
 };
 
-const sortedMovies = (category = "popularity", page, genre = "", year = "") => {
+const sortedPpl = (category = "popularity", page, genre = "", year = "") => {
   const start = `${year}-01-01`;
   const end = `${year}-12-31`;
   const today = new Date().toISOString().split("T")[0];
 
-  let url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=popularity.desc&vote_count.gte=${vote_count}&vote_average.gte=${vote_average}&with_keywords=9675|9663`;
+  let url = `https://api.themoviedb.org/3/person/popular?language=fr-FR`;
 
-//9675,9663
+  //9675,9663
 
   switch (category) {
-    case "top_rated":
-      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=vote_average.desc&without_genres=10755&vote_count.gte=${vote_count}&vote_average.gte=${vote_average}&with_keywords=9675|9663`;
-      break;
     case "popularity":
       url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=vote_average.desc&without_genres=10755&vote_count.gte=200&vote_average.gte=${vote_average}&with_keywords=9675|9663`;
-      break;
-    case "newly_added":
-    case "new":
-      url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&sort_by=primary_release_date.desc&vote_average.gte=${vote_average}&vote_count.gte=${vote_count}&with_keywords=9675|9663`;
       break;
     default:
       break;
   }
 
-  url =
-    url +
-    (page ? `&page=${page}` : "") +
-    (!!genre ? `&with_genres=${genre}` : "") +
-    (!!year
-      ? `&primary_release_date.lte=${end}&primary_release_date.gte=${start}`
-      : `&primary_release_date.lte=${today}`) +
-    (["newly_added", "popularity"].includes(category) || category == null
-      ? `&without_genres=10764|10766|10767`
-      : "");
+  url = url + (page ? `&page=${page}` : "");
 
   const options = {
     method: "GET",
@@ -644,6 +628,50 @@ let findCollection = async (id = "") => {
     });
 };
 
+let getPplDetail = async (id = "") => {
+  let url = `https://api.themoviedb.org/3/person/${id}?language=fr-FR`;
+
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "id" in json ? json : false;
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return false;
+    });
+};
+
+let getPplMovies = async (id = "") => {
+  let url = `https://api.themoviedb.org/3/person/${id}/movie_credits?language=fr-FR`;
+
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      return "id" in json && "cast" in json ? json["cast"] : false;
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return false;
+    });
+};
+
 // (async () => {
 //   require("fs").writeFileSync(
 //     "./assets/collections.bak.json",
@@ -669,7 +697,7 @@ module.exports = {
   getSeason,
   trendingMovies,
   trendingTVShows,
-  sortedMovies,
+  sortedPpl,
   sortedTV,
   searchTVShows,
   searchMovies,
@@ -678,4 +706,6 @@ module.exports = {
   onAirTVShows,
   getCollectionsFromMovies,
   findCollection,
+  getPplDetail,
+  getPplMovies,
 };
