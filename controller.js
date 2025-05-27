@@ -421,12 +421,13 @@ class CatalogAddon {
         if (req.ok) {
           let json = await req.json();
           let tmdbDatafromImdbId = await findByImdbId(id, "movie");
+
           // return res.json(json);
 
           return res.json({
             json,
             overview:
-              "description" in tmdbDatafromImdbId
+              "overview" in tmdbDatafromImdbId
                 ? tmdbDatafromImdbId.overview
                 : json.description,
           });
