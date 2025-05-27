@@ -1,8 +1,8 @@
 const { config } = require("./config");
 const fetch = require("node-fetch");
 
-const vote_average = 5
-const vote_count = 12
+const vote_average = 5;
+const vote_count = 12;
 
 const getProviders = () => {
   const url =
@@ -80,6 +80,34 @@ const findMovie = (id) => {
     });
 };
 
+let findByImdbId = async (id, type) => {
+  const url = `https://api.themoviedb.org/3/find/${id}?external_source=imdb_id&language=fr-FR`;
+  if (!id) return false;
+  if (!type || !["movie", "tv"].includes(type)) {
+    type = "movie"; // default to movie
+  }
+  const options = {
+    method: "GET",
+    headers: {
+      accept: "application/json",
+      Authorization: `Bearer ${config.authorization}`,
+    },
+  };
+
+  return fetch(url, options)
+    .then((res) => res.json())
+    .then((json) => {
+      let movies = "movie_results" in json ? json["movie_results"] : [];
+      let series = "tv_results" in json ? json.tv_results : [];
+      let result = type == "movie" ? movies[0] : series[0];
+      return result;
+    })
+    .catch((err) => {
+      console.error("error:" + err);
+      return false;
+    });
+};
+
 const getSeason = (tvid, season) => {
   if (!tvid) return false;
   if (!season) {
@@ -128,6 +156,8 @@ const externalSourceMovie = (id) => {
       return false;
     });
 };
+
+// https://api.themoviedb.org/3/find/ttfff?external_source=imdb_id
 
 const externalSourceShow = (id) => {
   if (!id) return false;
@@ -267,7 +297,8 @@ const onAirTVShows = (
     (genre ? `&with_genres=${genre}` : "") +
     (origin ? `&with_origin_country=${origin}` : "") +
     (["newly_added", "popularity"].includes(category) ||
-    (category == null || genre == null)
+    category == null ||
+    genre == null
       ? `&without_genres=10764|10766|10767`
       : "");
 
@@ -589,4 +620,5 @@ module.exports = {
   searchMovies,
   getCastTeam,
   onAirTVShows,
+  findByImdbId,
 };

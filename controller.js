@@ -17,7 +17,7 @@ const {
   findMovie,
   getCastTeam,
   getSeason,
-  onAirMovies,
+  findByImdbId,
   onAirTVShows,
 } = require("./repository");
 const { toClean, years, origins, categories } = require("./utils");
@@ -420,10 +420,19 @@ class CatalogAddon {
         );
         if (req.ok) {
           let json = await req.json();
-          return res.json(json);
+          let tmdbDatafromImdbId = await findByImdbId(id, "movie");
+          // return res.json(json);
+
+          return res.json({
+            json,
+            overview:
+              "description" in tmdbDatafromImdbId
+                ? tmdbDatafromImdbId.overview
+                : json.description,
+          });
         }
       } catch (error) {
-        console.log({ error });
+        // console.log({ error });
         return res.json({
           meta: {
             id: id,
