@@ -414,33 +414,32 @@ class CatalogAddon {
     let { type, id, skip, genre } = parseRequest(req);
 
     if (type == "movie" && id.includes("tt")) {
-      try {
-        let req = await fetch(
-          `https://cinemeta-live.strem.io/meta/movie/${id}.json`
-        );
-        if (req.ok) {
-          let json = await req.json();
-          let tmdbDatafromImdbId = await findByImdbId(id, "movie");
+      // try {
+      //   let req = await fetch(
+      //     `https://cinemeta-live.strem.io/meta/movie/${id}.json`
+      //   );
+      //   if (req.ok) {
+      //     let json = await req.json();
+      //     let tmdbDatafromImdbId = await findByImdbId(id, "movie");
 
-          // return res.json(json);
+      //     return res.json({
+      //       json,
+      //       overview:
+      //         "overview" in tmdbDatafromImdbId
+      //           ? tmdbDatafromImdbId.overview
+      //           : json.description,
+      //     });
+      //   }
+      // } catch (error) {
+      //   return res.json({
+      //     meta: {
+      //       id: id,
+      //       type: type,
+      //     },
+      //   });
+      // }
 
-          return res.json({
-            json,
-            overview:
-              "overview" in tmdbDatafromImdbId
-                ? tmdbDatafromImdbId.overview
-                : json.description,
-          });
-        }
-      } catch (error) {
-        // console.log({ error });
-        return res.json({
-          meta: {
-            id: id,
-            type: type,
-          },
-        });
-      }
+      return;
     }
 
     id = (id ?? "").replace(config.prefix, "");
