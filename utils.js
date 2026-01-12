@@ -32,4 +32,4 @@ let toClean = (clean = "") => {
   return clean.replace(/\+/g, " ");
 };
 
-module.exports = { toClean, toKey, years, origins, categories };
+module.exports = { toClean, toKey, years: years(), origins, categories };
