@@ -87,20 +87,20 @@ class CatalogAddon {
     });
 
     //onair
-    manifest.catalogs.push({
-      type: "movie",
-      id: `${config.prefix}&id=onair`,
-      genres: [...genres.map((el) => el.name)],
-      extra: [
-        {
-          name: "genre",
-          options: [...genres.map((el) => el.name)],
-        },
-        { name: "skip" },
-      ],
-      extraSupported: ["genre", "skip"],
-      name: "On Air",
-    });
+    // manifest.catalogs.push({
+    //   type: "movie",
+    //   id: `${config.prefix}&id=onair`,
+    //   genres: [...genres.map((el) => el.name)],
+    //   extra: [
+    //     {
+    //       name: "genre",
+    //       options: [...genres.map((el) => el.name)],
+    //     },
+    //     { name: "skip" },
+    //   ],
+    //   extraSupported: ["genre", "skip"],
+    //   name: "On Air",
+    // });
 
     manifest.catalogs.push({
       type: "series",
