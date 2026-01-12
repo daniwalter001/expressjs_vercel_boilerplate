@@ -6,12 +6,12 @@ const categories = {
   top_rated: "Top Rated",
 };
 
-const years = () => {
+const toYears = () => {
   let years = [];
   const start = 1980;
   const end = new Date().getFullYear();
   for (let i = end; i >= start; i--) {
-    years.push(i);
+    years.push(i.toString());
   }
   return years;
 };
@@ -34,4 +34,4 @@ let toClean = (clean = "") => {
   return clean.replace(/\+/g, " ");
 };
 
-module.exports = { toClean, toKey, years: years(), origins, categories };
+module.exports = { toClean, toKey, years: toYears(), origins, categories };
