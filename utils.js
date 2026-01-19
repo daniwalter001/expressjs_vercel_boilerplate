@@ -15,13 +15,19 @@ const toYears = () => {
 };
 
 const origins = {
-  HK: "Hong Kong",
+  // HK: "Hong Kong",
   ZH: "China",
-  KR: "Korea",
-  JP: "Japon",
-  US: "USA",
-  FR: "France",
-  UK: "United Kingdom",
+  KO: "Korea",
+  JA: "Japon",
+  EN: "USA",
+};
+
+const locales = {
+  // HK: "Hong Kong",
+  ZH: "China",
+  KO: "Korea",
+  JA: "Japon",
+  EN: "USA",
 };
 
 let toKey = (clean = "") => {
@@ -32,4 +38,11 @@ let toClean = (clean = "") => {
   return clean.replace(/\+/g, " ");
 };
 
-module.exports = { toClean, toKey, years: toYears(), origins, categories };
+module.exports = {
+  toClean,
+  toKey,
+  years: toYears(),
+  origins,
+  categories,
+  locales,
+};

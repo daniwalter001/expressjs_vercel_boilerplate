@@ -20,7 +20,7 @@ const {
   findByImdbId,
   onAirTVShows,
 } = require("./repository");
-const { toClean, years, origins, categories } = require("./utils");
+const { toClean, years, origins, categories, locales } = require("./utils");
 
 class CatalogAddon {
   /**
@@ -85,22 +85,6 @@ class CatalogAddon {
       extraSupported: ["search", "genre", "skip"],
       name: "All",
     });
-
-    //onair
-    // manifest.catalogs.push({
-    //   type: "movie",
-    //   id: `${config.prefix}&id=onair`,
-    //   genres: [...genres.map((el) => el.name)],
-    //   extra: [
-    //     {
-    //       name: "genre",
-    //       options: [...genres.map((el) => el.name)],
-    //     },
-    //     { name: "skip" },
-    //   ],
-    //   extraSupported: ["genre", "skip"],
-    //   name: "On Air",
-    // });
 
     manifest.catalogs.push({
       type: "series",
@@ -198,6 +182,55 @@ class CatalogAddon {
       });
     });
 
+    Object.keys(locales).forEach((locale) => {
+      const country = locales[locale];
+      manifest.catalogs.push({
+        type: "movie",
+        id: `${config.prefix}&id=locale|${locale}`,
+        genres: [
+          ...Object.values(categories),
+          ...genres.map((el) => el.name),
+          // ...Object.values(origins),
+        ],
+        extra: [
+          {
+            name: "genre",
+            options: [
+              ...Object.values(categories),
+              ...genres.map((el) => el.name),
+              // ...Object.values(origins),
+            ],
+          },
+          { name: "skip" },
+        ],
+        extraSupported: ["genre", "skip"],
+        name: country,
+      });
+
+      manifest.catalogs.push({
+        type: "series",
+        id: `${config.prefix}&id=locale|${locale}`,
+        genres: [
+          ...Object.values(categories),
+          ...genres.map((el) => el.name),
+          // ...Object.values(origins),
+        ],
+        extra: [
+          {
+            name: "genre",
+            options: [
+              ...Object.values(categories),
+              ...genres.map((el) => el.name),
+              // ...Object.values(origins),
+            ],
+          },
+          { name: "skip" },
+        ],
+        extraSupported: ["genre", "skip"],
+        name: country,
+      });
+    });
+
     var json = { ...manifest };
     return res.send(json);
   }
@@ -223,9 +256,11 @@ class CatalogAddon {
     let catalog = [];
     let genresValues = genres.map((el) => el.name);
 
-    let providerId = id.split("&id=").pop();
-    // console.log({ providerId });
-    let provider = providers.find((el) => el.provider_id == providerId);
+    let providerId = id.includes("locale|") ? null : id.split("&id=").pop();
+    let locale = id.includes("locale|") ? id.split("&id=locale|").pop() : null;
+    let provider = providerId
+      ? providers.find((el) => el.provider_id == providerId)
+      : null;
 
     if (extra) {
       if (Object.values(categories).includes(extra)) {
@@ -234,6 +269,7 @@ class CatalogAddon {
       } else if (Object.values(origins).includes(extra)) {
         const index = Object.values(origins).findIndex((el) => el == extra);
         origin = index != -1 ? Object.keys(origins).at(index) : null;
+        origin = origin ? origin?.toLowerCase() : null;
       } else if (genresValues.includes(extra)) {
         genre = genres.find((el) => el.name == extra);
       } else if (years.includes(extra)) {
@@ -260,7 +296,7 @@ class CatalogAddon {
         }
       } else {
         if (!provider && !category && !origin) {
-          console.log({ providerId });
+          console.log({ providerId, locale });
 
           if (["onair", "new"].includes(providerId)) {
             category = providerId;
@@ -275,9 +311,26 @@ class CatalogAddon {
           }
         }
 
-        console.log({ category, genre, origin, provider });
+        console.log({ category, genre, origin, provider, locale });
 
-        if (category && !provider) {
+        if (locale) {
+          catalog =
+            type == "movie"
+              ? await sortedMovies(
+                  category,
+                  _skip,
+                  extra && genre ? genre.id : null,
+                  year,
+                  locale,
+                )
+              : await sortedTV(
+                  category,
+                  _skip,
+                  extra && genre ? genre.id : null,
+                  year,
+                  locale,
+                );
+        } else if (category && !provider) {
           switch (category) {
             case "trending":
               catalog =
@@ -293,7 +346,7 @@ class CatalogAddon {
                       "popularity",
                       _skip,
                       extra && genre ? genre.id : null,
-                      null
+                      null,
                     )
                   : await onAirTVShows(
                       null,
@@ -301,7 +354,7 @@ class CatalogAddon {
                       _skip,
                       extra && genre ? genre.id : null,
                       origin,
-                      category
+                      category,
                     );
               break;
             case "trending+genre":
@@ -313,13 +366,13 @@ class CatalogAddon {
                       category,
                       _skip,
                       extra && genre ? genre.id : null,
-                      year
+                      year,
                     )
                   : await sortedTV(
                       category,
                       _skip,
                       extra && genre ? genre.id : null,
-                      year
+                      year,
                     );
               break;
           }
@@ -331,7 +384,7 @@ class CatalogAddon {
               _skip,
               extra && genre ? genre?.id : null,
               extra ? origin : null,
-              category
+              category,
             );
           } else {
             try {
@@ -343,7 +396,7 @@ class CatalogAddon {
                       _skip,
                       extra && genre ? genre.id : null,
                       extra ? origin : null,
-                      category
+                      category,
                     )
                   : await discoverTVShows(
                       provider?.provider_id,
@@ -351,7 +404,7 @@ class CatalogAddon {
                       _skip,
                       extra && genre ? genre?.id : null,
                       extra ? origin : null,
-                      category
+                      category,
                     );
             } catch (error) {
               console.log({ error });
@@ -383,8 +436,8 @@ class CatalogAddon {
               type == "series"
                 ? config.prefix + one?.id
                 : "imdb_id" in one && !!one?.imdb_id
-                ? one?.imdb_id
-                : config.prefix + one?.id,
+                  ? one?.imdb_id
+                  : config.prefix + one?.id,
             description: one?.overview,
             type: type,
             imdbRating: one?.vote_average,
@@ -473,8 +526,8 @@ class CatalogAddon {
         id:
           type == "series"
             ? config.prefix + id?.toString()
-            : show?.imdb_id ??
-              (imdb && "imdb_id" in imdb ? imdb["imdb_id"] : ""),
+            : (show?.imdb_id ??
+              (imdb && "imdb_id" in imdb ? imdb["imdb_id"] : "")),
         type: type,
         imdbRating: show?.vote_average,
         released:
@@ -483,8 +536,8 @@ class CatalogAddon {
               ? `${show?.release_date}T05:00:00.000Z`
               : new Date().toISOString()
             : show?.first_air_date
-            ? `${show?.first_air_date}T05:00:00.000Z`
-            : new Date().toISOString(),
+              ? `${show?.first_air_date}T05:00:00.000Z`
+              : new Date().toISOString(),
         genres: show?.genres?.map((el) => el?.name),
         poster: "https://image.tmdb.org/t/p/w780" + show?.poster_path,
         background: config.cdn_path + show?.backdrop_path,
@@ -516,14 +569,14 @@ class CatalogAddon {
                   released:
                     `${el?.air_date ?? new Date().toISOString()}`.substring(
                       0,
-                      10
+                      10,
                     ) + "T05:00:00.000Z",
                   thumbnail: config.cdn_path + el?.still_path,
                 });
               }
               resolve(arr);
             });
-          })
+          }),
         );
 
         meta.videos = (meta.videos ?? []).reduce(
@@ -531,7 +584,7 @@ class CatalogAddon {
             currentArray = currentArray.concat(currentValue);
             return currentArray;
           },
-          []
+          [],
         );
       }
 

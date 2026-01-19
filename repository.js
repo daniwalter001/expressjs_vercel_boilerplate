@@ -224,13 +224,13 @@ const getMovieGenres = () => {
     });
 };
 
-const discoverTVShows = (
+const discoverTVShows = async (
   providerID,
   region = "US",
   page,
   genre,
   origin,
-  category
+  category,
 ) => {
   let today = new Date().toISOString().split("T")[0];
   let start = `${new Date().getFullYear() - 2}-01-01`;
@@ -242,7 +242,7 @@ const discoverTVShows = (
       : "") +
     (page ? `&page=${page}` : "") +
     (genre ? `&with_genres=${genre}` : "") +
-    (origin ? `&with_origin_country=${origin}` : "") +
+    (origin ? `&with_original_language=${origin}` : "") +
     (category == "popularity" || !!genre
       ? `&sort_by=popularity.desc`
       : "&sort_by=first_air_date.desc") +
@@ -276,7 +276,7 @@ const onAirTVShows = (
   page,
   genre,
   origin,
-  category
+  category,
 ) => {
   let today = new Date().toISOString().split("T")[0];
   let tomorrow = new Date(new Date().getTime() + 24 * 60 * 60 * 1000)
@@ -295,7 +295,7 @@ const onAirTVShows = (
       : "") +
     (page ? `&page=${page}` : "") +
     (genre ? `&with_genres=${genre}` : "") +
-    (origin ? `&with_origin_country=${origin}` : "") +
+    (origin ? `&with_original_language=${origin}` : "") +
     (["newly_added", "popularity"].includes(category) ||
     category == null ||
     genre == null
@@ -309,6 +309,8 @@ const onAirTVShows = (
       Authorization: `Bearer ${config.authorization}`,
     },
   };
+
+  console.log({ url });
 
   return fetch(url, options)
     .then((res) => res.json())
@@ -327,7 +329,7 @@ const discoverMovies = (
   page,
   genre,
   origin,
-  category
+  category,
 ) => {
   let start = `${new Date().getFullYear() - 2}-01-01`;
   let today = new Date().toISOString().split("T")[0];
@@ -339,7 +341,7 @@ const discoverMovies = (
       : "") +
     (page ? `&page=${page}` : "") +
     (genre ? `&with_genres=${genre}` : "") +
-    (origin ? `&with_origin_country=${origin}` : "") +
+    (origin ? `&with_original_language=${origin}` : "") +
     (category == "popularity" || !!genre
       ? `&sort_by=popularity.desc`
       : "&sort_by=primary_release_date.desc") +
@@ -409,7 +411,13 @@ const trendingMovies = () => {
     });
 };
 
-const sortedMovies = (category = "popularity", page, genre = "", year = "") => {
+const sortedMovies = (
+  category = "popularity",
+  page,
+  genre = "",
+  year = "",
+  origin,
+) => {
   const start = `${year}-01-01`;
   const end = `${year}-12-31`;
   const today = new Date().toISOString().split("T")[0];
@@ -440,7 +448,8 @@ const sortedMovies = (category = "popularity", page, genre = "", year = "") => {
       : `&primary_release_date.lte=${today}`) +
     (["newly_added", "popularity"].includes(category) || category == null
       ? `&without_genres=10764|10766|10767`
-      : "");
+      : "") +
+    (origin ? `&with_original_language=${origin}` : "");
 
   console.log({ url });
 
@@ -463,10 +472,20 @@ const sortedMovies = (category = "popularity", page, genre = "", year = "") => {
     });
 };
 
-const sortedTV = (category = "popularity", page, genre = "", year = "") => {
+const sortedTV = (
+  category = "popularity",
+  page,
+  genre = "",
+  year = "",
+  origin,
+) => {
   const start = `${year}-01-01`;
   const end = `${year}-12-31`;
   const today = new Date().toISOString().split("T")[0];
+
+  console.log({ origin: typeof origin });
+
+  origin = origin ? origin?.toLowerCase() : null;
 
   let url = `https://api.themoviedb.org/3/discover/tv?include_adult=false&language=fr-FR&sort_by=popularity.desc&vote_average.gte=${vote_average}&vote_count.gte=${vote_count}&first_air_date.lte=${today}`;
 
@@ -490,7 +509,10 @@ const sortedTV = (category = "popularity", page, genre = "", year = "") => {
     (!!year ? `&first_air_date.lte=${end}&first_air_date.gte=${start}` : "") +
     (["newly_added", "popularity"].includes(category) || category == null
       ? `&without_genres=10764|10766|10767`
-      : "");
+      : "") +
+    (origin ? `&with_original_language=${origin}` : "");
+
+  console.log({ url });
 
   const options = {
     method: "GET",
@@ -579,7 +601,7 @@ const getCastTeam = (id = 1, type = "tv") => {
             .map((cast) => cast["original_name"])
             .sort(
               (c1, c2) =>
-                parseInt(c1["order"] ?? 0) - parseInt(c2["order"] ?? 0)
+                parseInt(c1["order"] ?? 0) - parseInt(c2["order"] ?? 0),
             )
         : [];
     })

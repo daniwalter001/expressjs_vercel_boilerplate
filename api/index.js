@@ -1,7 +1,6 @@
 require("dotenv").config();
 const express = require("express");
 const app = express();
-const { manifest } = require("../config");
 const CatalogAddon = require("../controller");
 
 app
@@ -10,7 +9,7 @@ app
   .get("/catalog/:type/:id/:extra.json", CatalogAddon.handleCatalog)
   .get("/meta/:type/:id.json", CatalogAddon.handleMeta)
   .listen(process.env.PORT || 3000, () => {
-    console.log("The server is working on " + process.env.PORT || 3000);
+    console.log("The server is working on " + (process.env.PORT || 3000));
   });
 
 module.exports = app;
