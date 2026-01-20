@@ -247,7 +247,7 @@ class CatalogAddon {
     res.setHeader("Content-Type", "application/json");
 
     const { type, id, skip, genre: extra, search } = parseRequest(req);
-    console.log({ type, id, skip, extra });
+    // console.log({ type, id, skip, extra });
 
     let genre = null;
     let year = null;
@@ -279,7 +279,7 @@ class CatalogAddon {
 
     try {
       let _skip = Math.floor((skip ?? 0) / 20) + 1;
-      console.log({ page: _skip });
+      // console.log({ page: _skip });
 
       if (search) {
         console.log(`Searching and looking for...${search}`);
@@ -296,8 +296,6 @@ class CatalogAddon {
         }
       } else {
         if (!provider && !category && !origin) {
-          console.log({ providerId, locale });
-
           if (["onair", "new"].includes(providerId)) {
             category = providerId;
           } else if (providerId == "top") {
@@ -310,8 +308,6 @@ class CatalogAddon {
             category = "trending";
           }
         }
-
-        console.log({ category, genre, origin, provider, locale });
 
         if (locale) {
           catalog =

@@ -310,8 +310,6 @@ const onAirTVShows = (
     },
   };
 
-  console.log({ url });
-
   return fetch(url, options)
     .then((res) => res.json())
     .then((json) => {
@@ -421,6 +419,7 @@ const sortedMovies = (
   const start = `${year}-01-01`;
   const end = `${year}-12-31`;
   const today = new Date().toISOString().split("T")[0];
+  origin = origin ? origin?.toLowerCase() : null;
 
   let url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=fr-FR&sort_by=popularity.desc&vote_count.gte=${vote_count}&vote_average.gte=${vote_average}`;
 
@@ -450,8 +449,6 @@ const sortedMovies = (
       ? `&without_genres=10764|10766|10767`
       : "") +
     (origin ? `&with_original_language=${origin}` : "");
-
-  console.log({ url });
 
   const options = {
     method: "GET",
@@ -483,8 +480,6 @@ const sortedTV = (
   const end = `${year}-12-31`;
   const today = new Date().toISOString().split("T")[0];
 
-  console.log({ origin: typeof origin });
-
   origin = origin ? origin?.toLowerCase() : null;
 
   let url = `https://api.themoviedb.org/3/discover/tv?include_adult=false&language=fr-FR&sort_by=popularity.desc&vote_average.gte=${vote_average}&vote_count.gte=${vote_count}&first_air_date.lte=${today}`;
@@ -511,8 +506,6 @@ const sortedTV = (
       ? `&without_genres=10764|10766|10767`
       : "") +
     (origin ? `&with_original_language=${origin}` : "");
-
-  console.log({ url });
 
   const options = {
     method: "GET",
